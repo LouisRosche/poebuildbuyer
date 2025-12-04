@@ -158,15 +158,20 @@ body {
     border-bottom-color: var(--accent-primary);
 }
 
-/* Main Content */
+/* Main Content - Centered with left-aligned text */
 .main-content {
     flex: 1;
     padding: var(--space-lg) var(--space-xl);
     width: 100%;
+    max-width: var(--container-xl);
+    margin: 0 auto;
+    text-align: left;
 }
 
 .tab-content {
     display: none;
+    max-width: var(--container-lg);
+    margin: 0 auto;
 }
 
 .tab-content.active {
@@ -590,6 +595,7 @@ body {
 .archetypes-header,
 .builds-header {
     margin-bottom: var(--space-xl);
+    text-align: center;
 }
 
 .archetypes-header h2,
