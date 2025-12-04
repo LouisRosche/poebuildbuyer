@@ -4,8 +4,11 @@
  */
 
 const Prices = {
-    // poe.ninja API base URL
+    // poe.ninja API base URL (note: may have CORS issues)
     API_BASE: 'https://poe.ninja/api/data',
+
+    // Backend API URL (set when backend is available)
+    BACKEND_URL: null,
 
     // Current league (will be updated)
     league: 'Standard',
@@ -14,6 +17,85 @@ const Prices = {
     cache: {},
     cacheTimestamp: 0,
     CACHE_TTL: 30 * 60 * 1000, // 30 minutes
+
+    // Whether we're using estimated prices (fallback)
+    usingEstimates: false,
+
+    // Estimated prices for common uniques (fallback when API unavailable)
+    // These are rough estimates - real prices vary by league
+    ESTIMATED_PRICES: {
+        // Weapons
+        'tabula rasa': 10,
+        'obliteration': 5,
+        'wasp nest': 3,
+        'cerberus limb': 15,
+        'death\'s opus': 50,
+        'tidebreaker': 20,
+        'kaom\'s primacy': 5,
+        'cold iron point': 30,
+        // Armour
+        'kaom\'s heart': 100,
+        'cloak of flame': 5,
+        'belly of the beast': 30,
+        'brass dome': 80,
+        'inpulsa\'s broken heart': 60,
+        'hyrri\'s ire': 40,
+        'carcass jack': 25,
+        'dendrobate': 15,
+        'vis mortis': 20,
+        'coming calamity': 10,
+        'cloak of defiance': 15,
+        'skin of the lords': 200,
+        // Helmets
+        'goldrim': 2,
+        'the baron': 5,
+        'starkonja\'s head': 10,
+        'abyssus': 20,
+        'crown of the inward eye': 50,
+        'mind of the council': 15,
+        // Gloves
+        'atziri\'s acuity': 150,
+        'grip of the council': 10,
+        'storm\'s gift': 30,
+        'the embalmer': 5,
+        // Boots
+        'wanderlust': 1,
+        'atziri\'s step': 15,
+        'bones of ullr': 5,
+        'sin trek': 10,
+        'corpsewalker': 25,
+        'victario\'s flight': 5,
+        'ralakesh\'s impatience': 30,
+        // Belts
+        'darkness enthroned': 20,
+        'headhunter': 5000,
+        'mageblood': 10000,
+        'ryslatha\'s coil': 100,
+        // Amulets
+        'atziri\'s foible': 3,
+        'sidhebreath': 1,
+        'astramentis': 25,
+        'stone of lazhwar': 2,
+        'impresence': 50,
+        'ashes of the stars': 500,
+        'pandemonius': 80,
+        'aul\'s uprising': 200,
+        'daresso\'s salute': 15,
+        // Rings
+        'snakepit': 5,
+        'kalandra\'s touch': 1000,
+        // Shields
+        'rathpith globe': 50,
+        'aegis aurora': 150,
+        'advancing fortress': 5,
+        'prism guardian': 40,
+        // Jewels
+        'violent dead': 10,
+        'anatomical knowledge': 15,
+        'undying hate': 30,
+        'heart of the well': 20,
+        'from nothing': 40,
+    },
 
     // Item type to API endpoint mapping
     ITEM_TYPES: {
@@ -48,7 +130,7 @@ const Prices = {
     /**
      * Initialize with league setting
      */
-    init() {
+    async init() {
         const settings = Storage.getSettings();
         this.league = settings.league || 'Standard';
 
@@ -57,6 +139,22 @@ const Prices = {
         if (cached) {
             this.cache = cached;
             this.cacheTimestamp = Date.now();
+        }
+
+        // Check if backend API is available
+        if (typeof API !== 'undefined' && API.isAvailable && API.BASE_URL) {
+            this.BACKEND_URL = API.BASE_URL;
+            console.log('Prices: Using backend API');
+        } else {
+            // Test if poe.ninja is accessible (it likely isn't due to CORS)
+            try {
+                const testUrl = `${this.API_BASE}/currencyoverview?type=Currency&league=Standard`;
+                const response = await fetch(testUrl, { method: 'HEAD', mode: 'cors' });
+                if (!response.ok) throw new Error('API not accessible');
+            } catch (e) {
+                console.log('Prices: poe.ninja not accessible (CORS), using estimates');
+                this.usingEstimates = true;
+            }
         }
     },
 
@@ -126,38 +224,111 @@ const Prices = {
             return cached;
         }
 
+        // If using estimates (CORS blocked), return estimated price
+        if (this.usingEstimates) {
+            return this.getEstimatedPrice(itemName);
+        }
+
+        // Try backend API first if available
+        if (this.BACKEND_URL) {
+            try {
+                const response = await fetch(`${this.BACKEND_URL}/prices/item/${encodeURIComponent(itemName)}`);
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data && data.chaos_equivalent) {
+                        const priceData = {
+                            name: itemName,
+                            chaos: data.chaos_equivalent,
+                            divine: data.divine_equivalent || 0,
+                            change: data.change_percent || 0,
+                            listingCount: data.listing_count || 0,
+                            icon: null,
+                            source: 'backend'
+                        };
+                        Storage.setCachedPrice(cacheKey, priceData);
+                        return priceData;
+                    }
+                }
+            } catch (e) {
+                console.warn('Backend price fetch failed, trying poe.ninja');
+            }
+        }
+
         // Determine item type
         let itemTypes = ['UniqueWeapon', 'UniqueArmour', 'UniqueAccessory', 'UniqueJewel'];
         if (slot && this.SLOT_TO_TYPE[slot]) {
             itemTypes = [this.SLOT_TO_TYPE[slot]];
         }
 
-        // Search in each item type
-        for (const itemType of itemTypes) {
-            const prices = await this.fetchPrices(itemType);
-            const match = prices.find(p =>
-                p.name.toLowerCase() === itemName.toLowerCase() ||
-                p.name.toLowerCase().includes(itemName.toLowerCase())
-            );
+        // Search in each item type via poe.ninja
+        try {
+            for (const itemType of itemTypes) {
+                const prices = await this.fetchPrices(itemType);
+                const match = prices.find(p =>
+                    p.name.toLowerCase() === itemName.toLowerCase() ||
+                    p.name.toLowerCase().includes(itemName.toLowerCase())
+                );
 
-            if (match) {
-                const priceData = {
-                    name: match.name,
-                    chaos: match.chaosValue || match.chaosEquivalent || 0,
-                    divine: match.divineValue || 0,
-                    exalted: match.exaltedValue || 0,
-                    change: match.sparkline?.totalChange || 0,
-                    listingCount: match.listingCount || 0,
-                    icon: match.icon || null
-                };
+                if (match) {
+                    const priceData = {
+                        name: match.name,
+                        chaos: match.chaosValue || match.chaosEquivalent || 0,
+                        divine: match.divineValue || 0,
+                        exalted: match.exaltedValue || 0,
+                        change: match.sparkline?.totalChange || 0,
+                        listingCount: match.listingCount || 0,
+                        icon: match.icon || null,
+                        source: 'poe.ninja'
+                    };
 
-                // Cache the result
-                Storage.setCachedPrice(cacheKey, priceData);
-                return priceData;
+                    // Cache the result
+                    Storage.setCachedPrice(cacheKey, priceData);
+                    return priceData;
+                }
             }
+        } catch (e) {
+            console.warn('poe.ninja fetch failed, using estimates');
+            this.usingEstimates = true;
+            return this.getEstimatedPrice(itemName);
         }
 
-        return null;
+        // Fallback to estimates
+        return this.getEstimatedPrice(itemName);
+    },
+
+    /**
+     * Get estimated price for an item (fallback)
+     */
+    getEstimatedPrice(itemName) {
+        const key = itemName.toLowerCase();
+        const estimate = this.ESTIMATED_PRICES[key];
+
+        if (estimate) {
+            return {
+                name: itemName,
+                chaos: estimate,
+                divine: estimate >= 200 ? estimate / 200 : 0,
+                change: 0,
+                listingCount: 0,
+                icon: null,
+                source: 'estimate',
+                isEstimate: true
+            };
+        }
+
+        // If not in our list, make a rough guess based on tier
+        // Assume ~50c for unknown uniques
+        return {
+            name: itemName,
+            chaos: 50,
+            divine: 0,
+            change: 0,
+            listingCount: 0,
+            icon: null,
+            source: 'estimate',
+            isEstimate: true,
+            isGuess: true
+        };
     },
 
     /**
@@ -236,6 +407,28 @@ const Prices = {
      * Get currency exchange rates
      */
     async getCurrencyRates() {
+        // If using estimates, return reasonable defaults
+        if (this.usingEstimates) {
+            return { divine: 200, exalted: 15, chaos: 1 };
+        }
+
+        // Try backend first
+        if (this.BACKEND_URL) {
+            try {
+                const response = await fetch(`${this.BACKEND_URL}/prices/currency`);
+                if (response.ok) {
+                    const data = await response.json();
+                    return {
+                        divine: data.divine || 200,
+                        exalted: data.exalted || 15,
+                        chaos: 1
+                    };
+                }
+            } catch (e) {
+                console.warn('Backend currency fetch failed');
+            }
+        }
+
         try {
             const url = `${this.API_BASE}/currencyoverview?type=Currency&league=${encodeURIComponent(this.league)}`;
             const response = await fetch(url);
@@ -259,7 +452,8 @@ const Prices = {
             return rates;
         } catch (error) {
             console.error('Error fetching currency rates:', error);
-            return { divine: 200, exalted: 20, chaos: 1 }; // Fallback
+            this.usingEstimates = true;
+            return { divine: 200, exalted: 15, chaos: 1 }; // Fallback
         }
     },
 

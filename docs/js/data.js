@@ -1363,6 +1363,525 @@ const Data = {
                     ]
                 }
             ]
+        },
+        // Sorceress builds
+        {
+            id: "frozen-orb-stormweaver",
+            name: "Frozen Orb Stormweaver",
+            slug: "frozen-orb-stormweaver",
+            class_name: "Stormweaver",
+            primary_playstyle: "spell",
+            damage_type: "cold",
+            tags: ["cold", "spell", "freeze", "fast-mapper", "league-start"],
+            mapping_score: 9,
+            bossing_score: 6,
+            league_start_score: 8,
+            complexity: 1,
+            description: "Classic frozen orb build that clears screens with cold explosions. Stormweaver enhances cold damage and freeze duration for excellent control.",
+            pros: [
+                "Great clear speed",
+                "Strong freeze for safety",
+                "Simple one-button gameplay",
+                "Good league starter"
+            ],
+            cons: [
+                "Lower single target damage",
+                "Mana management needed",
+                "Projectile aiming required"
+            ],
+            playstyle_notes: "Cast Frozen Orb into packs and watch them shatter. Use frost blink for mobility. Freeze is your best defense.",
+            leveling_notes: "Frozen Orb available early. Very straightforward leveling.",
+            tiers: [
+                {
+                    tier_name: "League Start",
+                    tier_order: 1,
+                    min_budget: 0,
+                    max_budget: 50,
+                    description: "Works great on self-found gear.",
+                    upgrade_notes: "Get wand with +spell gems and spell damage.",
+                    items: [
+                        { slot: "weapon", item_name: "Rare Wand", item_type: "Wand", is_unique: false, priority: 2 },
+                        { slot: "body", item_name: "Tabula Rasa", item_type: "Body Armour", is_unique: true, priority: 1 },
+                        { slot: "boots", item_name: "Wanderlust", item_type: "Boots", is_unique: true, priority: 3 }
+                    ]
+                },
+                {
+                    tier_name: "Budget",
+                    tier_order: 2,
+                    min_budget: 50,
+                    max_budget: 500,
+                    description: "Comfortable T16 mapper.",
+                    upgrade_notes: "Focus on cold damage and cast speed.",
+                    items: [
+                        { slot: "weapon", item_name: "Rare Wand", item_type: "Wand", is_unique: false, priority: 1 },
+                        { slot: "body", item_name: "Hyrri's Ire", item_type: "Body Armour", is_unique: true, priority: 1 },
+                        { slot: "helmet", item_name: "Starkonja's Head", item_type: "Helmet", is_unique: true, priority: 2 },
+                        { slot: "amulet", item_name: "Pandemonius", item_type: "Amulet", is_unique: true, priority: 1 }
+                    ]
+                }
+            ]
+        },
+        {
+            id: "meteor-chronomancer",
+            name: "Meteor Strike Chronomancer",
+            slug: "meteor-chronomancer",
+            class_name: "Chronomancer",
+            primary_playstyle: "spell",
+            damage_type: "fire",
+            tags: ["fire", "spell", "boss-killer", "aoe", "channeling"],
+            mapping_score: 6,
+            bossing_score: 9,
+            league_start_score: 5,
+            complexity: 2,
+            description: "Call down devastating meteors on enemies. Chronomancer's time manipulation allows for stacking meteor impacts for massive burst damage.",
+            pros: [
+                "Incredible burst damage",
+                "Satisfying meteor impacts",
+                "Great boss killer",
+                "Scales well with investment"
+            ],
+            cons: [
+                "Slower clear speed",
+                "Cast time delay",
+                "Positioning required"
+            ],
+            playstyle_notes: "Stack meteors on boss spawn points. Use time manipulation to overlap damage windows.",
+            leveling_notes: "Level with Fireball or Firestorm until you unlock Meteor.",
+            tiers: [
+                {
+                    tier_name: "Budget",
+                    tier_order: 2,
+                    min_budget: 100,
+                    max_budget: 1000,
+                    description: "Good boss damage on budget.",
+                    upgrade_notes: "Get +fire gem level staff.",
+                    items: [
+                        { slot: "weapon", item_name: "Rare Staff", item_type: "Staff", is_unique: false, priority: 1 },
+                        { slot: "body", item_name: "Cloak of Flame", item_type: "Body Armour", is_unique: true, priority: 2 },
+                        { slot: "amulet", item_name: "Atziri's Foible", item_type: "Amulet", is_unique: true, priority: 2 }
+                    ]
+                },
+                {
+                    tier_name: "Mid-Tier",
+                    tier_order: 3,
+                    min_budget: 1000,
+                    max_budget: 10000,
+                    description: "Melts bosses, comfortable mapping.",
+                    upgrade_notes: "Get Kaom's Heart for survivability.",
+                    items: [
+                        { slot: "weapon", item_name: "Rare Staff", item_type: "Staff", is_unique: false, priority: 1 },
+                        { slot: "body", item_name: "Kaom's Heart", item_type: "Body Armour", is_unique: true, priority: 1 },
+                        { slot: "helmet", item_name: "Rare Helmet", item_type: "Helmet", is_unique: false, priority: 2 },
+                        { slot: "boots", item_name: "Atziri's Step", item_type: "Boots", is_unique: true, priority: 2 }
+                    ]
+                }
+            ]
+        },
+        {
+            id: "lightning-storm-sorceress",
+            name: "Lightning Storm Sorceress",
+            slug: "lightning-storm-sorceress",
+            class_name: "Sorceress",
+            primary_playstyle: "spell",
+            damage_type: "lightning",
+            tags: ["lightning", "spell", "fast-mapper", "shock", "channeling"],
+            mapping_score: 8,
+            bossing_score: 7,
+            league_start_score: 7,
+            complexity: 2,
+            description: "Channel devastating lightning storms that grow in intensity. Great balance of clear and single target with shock amplification.",
+            pros: [
+                "Good all-rounder",
+                "Shock amplifies damage",
+                "Scales well",
+                "Flexible playstyle"
+            ],
+            cons: [
+                "Channeling is risky",
+                "Mana hungry",
+                "Needs cast speed investment"
+            ],
+            playstyle_notes: "Channel to build storm intensity, release for maximum damage. Keep enemies shocked for damage bonus.",
+            leveling_notes: "Spark or Arc for leveling, transition to Lightning Storm later.",
+            tiers: [
+                {
+                    tier_name: "League Start",
+                    tier_order: 1,
+                    min_budget: 0,
+                    max_budget: 50,
+                    description: "Functional on self-found.",
+                    upgrade_notes: "Get Inpulsa's for clear.",
+                    items: [
+                        { slot: "weapon", item_name: "Rare Wand", item_type: "Wand", is_unique: false, priority: 2 },
+                        { slot: "body", item_name: "Tabula Rasa", item_type: "Body Armour", is_unique: true, priority: 1 }
+                    ]
+                },
+                {
+                    tier_name: "Budget",
+                    tier_order: 2,
+                    min_budget: 50,
+                    max_budget: 500,
+                    description: "Smooth mapping with good shock effect.",
+                    upgrade_notes: "Storm's Gift for proliferation.",
+                    items: [
+                        { slot: "weapon", item_name: "Rare Wand", item_type: "Wand", is_unique: false, priority: 1 },
+                        { slot: "body", item_name: "Inpulsa's Broken Heart", item_type: "Body Armour", is_unique: true, priority: 1 },
+                        { slot: "gloves", item_name: "Storm's Gift", item_type: "Gloves", is_unique: true, priority: 1 },
+                        { slot: "boots", item_name: "Atziri's Step", item_type: "Boots", is_unique: true, priority: 2 }
+                    ]
+                }
+            ]
+        },
+        // Mercenary builds
+        {
+            id: "crossbow-witchhunter",
+            name: "Rapid Crossbow Witchhunter",
+            slug: "crossbow-witchhunter",
+            class_name: "Witchhunter",
+            primary_playstyle: "ranged",
+            damage_type: "physical",
+            tags: ["ranged", "physical", "fast-mapper", "league-start", "projectile"],
+            mapping_score: 9,
+            bossing_score: 7,
+            league_start_score: 9,
+            complexity: 1,
+            description: "Rapid-fire crossbow build that excels at clearing content quickly. Witchhunter provides anti-magic bonuses and burst damage windows.",
+            pros: [
+                "Excellent league starter",
+                "Fast clear speed",
+                "Simple gameplay",
+                "Great scaling"
+            ],
+            cons: [
+                "Need to manage reload",
+                "Squishy without investment",
+                "Ammo management"
+            ],
+            playstyle_notes: "Burst down packs with rapid fire, reload between groups. Use mobility skills to stay safe.",
+            leveling_notes: "Crossbow skills available from act 1. Smooth progression.",
+            tiers: [
+                {
+                    tier_name: "League Start",
+                    tier_order: 1,
+                    min_budget: 0,
+                    max_budget: 50,
+                    description: "Excellent self-found viable build.",
+                    upgrade_notes: "Get a higher damage crossbow.",
+                    items: [
+                        { slot: "weapon", item_name: "Rare Crossbow", item_type: "Crossbow", is_unique: false, priority: 1 },
+                        { slot: "body", item_name: "Tabula Rasa", item_type: "Body Armour", is_unique: true, priority: 1 },
+                        { slot: "boots", item_name: "Wanderlust", item_type: "Boots", is_unique: true, priority: 3 }
+                    ]
+                },
+                {
+                    tier_name: "Budget",
+                    tier_order: 2,
+                    min_budget: 50,
+                    max_budget: 500,
+                    description: "Fast T16 farmer.",
+                    upgrade_notes: "Focus on attack speed and crit.",
+                    items: [
+                        { slot: "weapon", item_name: "Rare Crossbow", item_type: "Crossbow", is_unique: false, priority: 1 },
+                        { slot: "body", item_name: "Belly of the Beast", item_type: "Body Armour", is_unique: true, priority: 1 },
+                        { slot: "helmet", item_name: "Starkonja's Head", item_type: "Helmet", is_unique: true, priority: 2 },
+                        { slot: "boots", item_name: "Atziri's Step", item_type: "Boots", is_unique: true, priority: 2 }
+                    ]
+                }
+            ]
+        },
+        {
+            id: "grenade-gemling",
+            name: "Explosive Grenade Gemling Legionnaire",
+            slug: "grenade-gemling",
+            class_name: "Gemling Legionnaire",
+            primary_playstyle: "ranged",
+            damage_type: "fire",
+            tags: ["fire", "ranged", "aoe", "boss-killer", "explosive"],
+            mapping_score: 7,
+            bossing_score: 8,
+            league_start_score: 7,
+            complexity: 2,
+            description: "Throw explosive grenades that devastate groups. Gemling Legionnaire's gem socketing provides unique skill modifications.",
+            pros: [
+                "Huge AoE damage",
+                "Great boss damage",
+                "Satisfying explosions",
+                "Flexible gem choices"
+            ],
+            cons: [
+                "Grenade arc takes practice",
+                "Slower than pure mappers",
+                "Resource management"
+            ],
+            playstyle_notes: "Arc grenades into packs, save burst for bosses. Position for maximum explosion overlap.",
+            leveling_notes: "Grenades available early, very smooth leveling.",
+            tiers: [
+                {
+                    tier_name: "League Start",
+                    tier_order: 1,
+                    min_budget: 0,
+                    max_budget: 50,
+                    description: "Strong on self-found.",
+                    upgrade_notes: "Get +fire damage gear.",
+                    items: [
+                        { slot: "weapon", item_name: "Rare Sceptre", item_type: "Sceptre", is_unique: false, priority: 2 },
+                        { slot: "body", item_name: "Tabula Rasa", item_type: "Body Armour", is_unique: true, priority: 1 }
+                    ]
+                },
+                {
+                    tier_name: "Mid-Tier",
+                    tier_order: 3,
+                    min_budget: 500,
+                    max_budget: 5000,
+                    description: "All content viable.",
+                    upgrade_notes: "Get Kaom's Heart for life pool.",
+                    items: [
+                        { slot: "weapon", item_name: "Rare Sceptre", item_type: "Sceptre", is_unique: false, priority: 1 },
+                        { slot: "body", item_name: "Kaom's Heart", item_type: "Body Armour", is_unique: true, priority: 1 },
+                        { slot: "helmet", item_name: "Rare Helmet", item_type: "Helmet", is_unique: false, priority: 2 },
+                        { slot: "boots", item_name: "Atziri's Step", item_type: "Boots", is_unique: true, priority: 2 }
+                    ]
+                }
+            ]
+        },
+        {
+            id: "dual-pistol-mercenary",
+            name: "Dual Pistol Mercenary",
+            slug: "dual-pistol-mercenary",
+            class_name: "Mercenary",
+            primary_playstyle: "ranged",
+            damage_type: "physical",
+            tags: ["ranged", "physical", "fast-mapper", "dual-wield", "speed"],
+            mapping_score: 10,
+            bossing_score: 5,
+            league_start_score: 8,
+            complexity: 2,
+            description: "Dual-wield pistols for maximum attack speed and clear. Pure speed build that excels at farming content quickly.",
+            pros: [
+                "Top tier clear speed",
+                "Very mobile",
+                "Fun gun-slinging gameplay",
+                "Scales well with gear"
+            ],
+            cons: [
+                "Glass cannon",
+                "Lower single target",
+                "Reload management"
+            ],
+            playstyle_notes: "Rapid fire into packs, dash between groups. Keep moving, keep shooting.",
+            leveling_notes: "Dual pistols available early. Fast leveling experience.",
+            tiers: [
+                {
+                    tier_name: "Budget",
+                    tier_order: 2,
+                    min_budget: 50,
+                    max_budget: 500,
+                    description: "Fast mapper on budget.",
+                    upgrade_notes: "Get higher crit pistols.",
+                    items: [
+                        { slot: "weapon", item_name: "Rare Pistol", item_type: "Pistol", is_unique: false, priority: 1 },
+                        { slot: "offhand", item_name: "Rare Pistol", item_type: "Pistol", is_unique: false, priority: 1 },
+                        { slot: "body", item_name: "Belly of the Beast", item_type: "Body Armour", is_unique: true, priority: 1 },
+                        { slot: "helmet", item_name: "Starkonja's Head", item_type: "Helmet", is_unique: true, priority: 2 }
+                    ]
+                },
+                {
+                    tier_name: "Endgame",
+                    tier_order: 4,
+                    min_budget: 10000,
+                    max_budget: null,
+                    description: "Maximum zoom farmer.",
+                    upgrade_notes: "Mirror-tier pistols and Headhunter.",
+                    items: [
+                        { slot: "weapon", item_name: "Rare Pistol", item_type: "Pistol", is_unique: false, priority: 1 },
+                        { slot: "offhand", item_name: "Rare Pistol", item_type: "Pistol", is_unique: false, priority: 1 },
+                        { slot: "body", item_name: "Rare Body Armour", item_type: "Body Armour", is_unique: false, priority: 1 },
+                        { slot: "belt", item_name: "Headhunter", item_type: "Belt", is_unique: true, priority: 1 }
+                    ]
+                }
+            ]
+        },
+        // Monk builds
+        {
+            id: "flicker-strike-invoker",
+            name: "Flicker Strike Invoker",
+            slug: "flicker-strike-invoker",
+            class_name: "Invoker",
+            primary_playstyle: "melee",
+            damage_type: "lightning",
+            tags: ["melee", "lightning", "fast-mapper", "speed", "strike"],
+            mapping_score: 10,
+            bossing_score: 5,
+            league_start_score: 4,
+            complexity: 3,
+            description: "Teleport between enemies with lightning speed. Invoker's elemental invocations add lightning damage and clear. Pure speed demon.",
+            pros: [
+                "Fastest clear in the game",
+                "Teleportation bypasses terrain",
+                "Very satisfying",
+                "Scales infinitely"
+            ],
+            cons: [
+                "Can be disorienting",
+                "Requires frenzy charge sustain",
+                "Boss damage is mediocre"
+            ],
+            playstyle_notes: "Hold flicker and watch yourself teleport through maps. Make sure you have frenzy charge generation.",
+            leveling_notes: "Level with other skills, transition to Flicker once you have Terminus Est or frenzy generation.",
+            tiers: [
+                {
+                    tier_name: "Budget",
+                    tier_order: 2,
+                    min_budget: 100,
+                    max_budget: 500,
+                    description: "Functional flicker with frenzy sustain.",
+                    upgrade_notes: "Get better frenzy generation.",
+                    items: [
+                        { slot: "weapon", item_name: "Rare Sword", item_type: "Sword", is_unique: false, priority: 1 },
+                        { slot: "body", item_name: "Belly of the Beast", item_type: "Body Armour", is_unique: true, priority: 1 },
+                        { slot: "boots", item_name: "Atziri's Step", item_type: "Boots", is_unique: true, priority: 2 }
+                    ]
+                },
+                {
+                    tier_name: "Endgame",
+                    tier_order: 4,
+                    min_budget: 10000,
+                    max_budget: null,
+                    description: "Pure speed. Clear maps in seconds.",
+                    upgrade_notes: "Mirror-tier gear for maximum zoom.",
+                    items: [
+                        { slot: "weapon", item_name: "Rare Sword", item_type: "Sword", is_unique: false, priority: 1 },
+                        { slot: "body", item_name: "Rare Body Armour", item_type: "Body Armour", is_unique: false, priority: 1 },
+                        { slot: "belt", item_name: "Headhunter", item_type: "Belt", is_unique: true, priority: 1 }
+                    ]
+                }
+            ]
+        },
+        {
+            id: "palm-strike-acolyte",
+            name: "Palm Strike Acolyte of Chayula",
+            slug: "palm-strike-acolyte",
+            class_name: "Acolyte of Chayula",
+            primary_playstyle: "melee",
+            damage_type: "chaos",
+            tags: ["melee", "chaos", "tanky", "boss-killer", "es"],
+            mapping_score: 6,
+            bossing_score: 9,
+            league_start_score: 5,
+            complexity: 2,
+            description: "Channel the void through devastating palm strikes. Acolyte's chaos and energy shield synergies create a tanky boss killer.",
+            pros: [
+                "Very tanky with ES",
+                "Excellent boss damage",
+                "Chaos bypasses resistances",
+                "Good sustain"
+            ],
+            cons: [
+                "Slower clear",
+                "Requires specific ES gear",
+                "Melee range is risky"
+            ],
+            playstyle_notes: "Stack chaos damage, use palm strikes to delete bosses. ES recharge provides excellent sustain.",
+            leveling_notes: "Level as generic melee, transition to chaos once you have the gear.",
+            tiers: [
+                {
+                    tier_name: "Budget",
+                    tier_order: 2,
+                    min_budget: 100,
+                    max_budget: 500,
+                    description: "Solid boss damage on budget.",
+                    upgrade_notes: "Get ES gear.",
+                    items: [
+                        { slot: "weapon", item_name: "Rare Claw", item_type: "Claw", is_unique: false, priority: 1 },
+                        { slot: "body", item_name: "Rare Body Armour", item_type: "Body Armour", is_unique: false, priority: 1 },
+                        { slot: "boots", item_name: "Sin Trek", item_type: "Boots", is_unique: true, priority: 2 }
+                    ]
+                },
+                {
+                    tier_name: "Mid-Tier",
+                    tier_order: 3,
+                    min_budget: 500,
+                    max_budget: 5000,
+                    description: "Tanky boss killer.",
+                    upgrade_notes: "Get Aegis Aurora for ES on block.",
+                    items: [
+                        { slot: "weapon", item_name: "Rare Claw", item_type: "Claw", is_unique: false, priority: 1 },
+                        { slot: "offhand", item_name: "Aegis Aurora", item_type: "Shield", is_unique: true, priority: 1 },
+                        { slot: "body", item_name: "Rare Body Armour", item_type: "Body Armour", is_unique: false, priority: 1 },
+                        { slot: "boots", item_name: "Sin Trek", item_type: "Boots", is_unique: true, priority: 1 }
+                    ]
+                }
+            ]
+        },
+        {
+            id: "quarterstaff-monk",
+            name: "Whirlwind Quarterstaff Monk",
+            slug: "quarterstaff-monk",
+            class_name: "Monk",
+            primary_playstyle: "melee",
+            damage_type: "physical",
+            tags: ["melee", "physical", "fast-mapper", "league-start", "aoe"],
+            mapping_score: 8,
+            bossing_score: 7,
+            league_start_score: 9,
+            complexity: 1,
+            description: "Spin through enemies with a quarterstaff. Simple, effective, and great for beginners. Monk's martial arts enhance attack speed and damage.",
+            pros: [
+                "Excellent league starter",
+                "Simple one-button gameplay",
+                "Great AoE clear",
+                "Tanky with block"
+            ],
+            cons: [
+                "Melee range",
+                "Not the fastest clearer",
+                "Average boss damage"
+            ],
+            playstyle_notes: "Spin to win! Keep moving through packs. Use your mobility skills between groups.",
+            leveling_notes: "Quarterstaff skills from level 1. Very smooth leveling.",
+            tiers: [
+                {
+                    tier_name: "League Start",
+                    tier_order: 1,
+                    min_budget: 0,
+                    max_budget: 50,
+                    description: "Self-found viable, works great.",
+                    upgrade_notes: "Get a high pDPS staff.",
+                    items: [
+                        { slot: "weapon", item_name: "Rare Quarterstaff", item_type: "Staff", is_unique: false, priority: 1 },
+                        { slot: "body", item_name: "Tabula Rasa", item_type: "Body Armour", is_unique: true, priority: 1 }
+                    ]
+                },
+                {
+                    tier_name: "Budget",
+                    tier_order: 2,
+                    min_budget: 50,
+                    max_budget: 500,
+                    description: "Comfortable all content farmer.",
+                    upgrade_notes: "Get Belly of the Beast for life.",
+                    items: [
+                        { slot: "weapon", item_name: "Rare Quarterstaff", item_type: "Staff", is_unique: false, priority: 1 },
+                        { slot: "body", item_name: "Belly of the Beast", item_type: "Body Armour", is_unique: true, priority: 1 },
+                        { slot: "helmet", item_name: "Starkonja's Head", item_type: "Helmet", is_unique: true, priority: 2 },
+                        { slot: "boots", item_name: "Atziri's Step", item_type: "Boots", is_unique: true, priority: 2 }
+                    ]
+                },
+                {
+                    tier_name: "Mid-Tier",
+                    tier_order: 3,
+                    min_budget: 500,
+                    max_budget: 5000,
+                    description: "All content viable with good damage.",
+                    upgrade_notes: "Focus on attack speed and crit.",
+                    items: [
+                        { slot: "weapon", item_name: "Rare Quarterstaff", item_type: "Staff", is_unique: false, priority: 1 },
+                        { slot: "body", item_name: "Belly of the Beast", item_type: "Body Armour", is_unique: true, priority: 1 },
+                        { slot: "helmet", item_name: "Abyssus", item_type: "Helmet", is_unique: true, priority: 2 },
+                        { slot: "belt", item_name: "Ryslatha's Coil", item_type: "Belt", is_unique: true, priority: 1 },
+                        { slot: "amulet", item_name: "Daresso's Salute", item_type: "Amulet", is_unique: true, priority: 2 }
+                    ]
+                }
+            ]
         }
     ],
 
@@ -1374,12 +1893,13 @@ const Data = {
     getArchetypesByClass(className) {
         if (!className || className === 'any') return this.ARCHETYPES;
         const classMap = {
-            witch: ['Witch', 'Necromancer', 'Blood Mage'],
-            sorceress: ['Sorceress'],
+            witch: ['Witch', 'Necromancer', 'Blood Mage', 'Elementalist', 'Occultist'],
+            sorceress: ['Sorceress', 'Stormweaver', 'Chronomancer'],
             ranger: ['Ranger', 'Deadeye', 'Pathfinder'],
-            mercenary: ['Mercenary'],
-            monk: ['Monk'],
-            warrior: ['Warrior', 'Slayer', 'Juggernaut']
+            mercenary: ['Mercenary', 'Witchhunter', 'Gemling Legionnaire'],
+            monk: ['Monk', 'Invoker', 'Acolyte of Chayula'],
+            warrior: ['Warrior', 'Slayer', 'Juggernaut', 'Berserker', 'Titan'],
+            templar: ['Templar', 'Hierophant', 'Inquisitor', 'Guardian']
         };
         const validClasses = classMap[className.toLowerCase()] || [className];
         return this.ARCHETYPES.filter(a => validClasses.includes(a.class_name));
