@@ -95,6 +95,35 @@ const Prices = {
         'undying hate': 30,
         'heart of the well': 20,
         'from nothing': 40,
+        'grand spectrum': 25,
+        'conqueror\'s efficiency': 5,
+        'conqueror\'s potency': 5,
+        // More Armour
+        'queen of the forest': 40,
+        'rat\'s nest': 15,
+        'shadows and dust': 10,
+        'seven-league step': 20,
+        'crown of eyes': 80,
+        'veil of the night': 5,
+        'maligaro\'s virtuosity': 10,
+        'kaom\'s roots': 20,
+        'lycosidae': 25,
+        // More Accessories
+        'ngamahu\'s sign': 5,
+        'call of the brotherhood': 40,
+        'xoph\'s blood': 150,
+        'dyadian dawn': 10,
+        'pyre': 5,
+        'carnage heart': 10,
+        'mark of the elder': 30,
+        'mark of the shaper': 30,
+        'le heup of all': 3,
+        'thief\'s torment': 20,
+        'ungil\'s harmony': 5,
+        'dream fragments': 10,
+        'belt of the deceiver': 5,
+        'polaric devastation': 25,
+        'badge of the brotherhood': 200,
     },
 
     // Item type to API endpoint mapping
@@ -174,12 +203,11 @@ const Prices = {
      */
     async getLeagues() {
         try {
-            // poe.ninja doesn't have a leagues endpoint, use known leagues
-            // For PoE2, the leagues might be different
+            // PoE2 early access leagues (as of Dec 2024)
             return [
                 { id: 'Standard', name: 'Standard' },
-                { id: 'poe2-Standard', name: 'PoE2 Standard' },
-                { id: 'Dawn', name: 'Dawn (PoE2 League)' }
+                { id: 'Settlers', name: 'Settlers (Current League)' },
+                { id: 'HC Settlers', name: 'HC Settlers' }
             ];
         } catch (error) {
             console.error('Error fetching leagues:', error);

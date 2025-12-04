@@ -6,12 +6,13 @@
 const Recommendations = {
     // Class name mapping for scoring
     CLASS_MAPPING: {
-        witch: ['Witch', 'Necromancer', 'Blood Mage'],
-        sorceress: ['Sorceress'],
+        witch: ['Witch', 'Necromancer', 'Blood Mage', 'Elementalist', 'Occultist'],
+        sorceress: ['Sorceress', 'Stormweaver', 'Chronomancer'],
         ranger: ['Ranger', 'Deadeye', 'Pathfinder'],
-        mercenary: ['Mercenary'],
-        monk: ['Monk'],
-        warrior: ['Warrior', 'Slayer', 'Juggernaut']
+        mercenary: ['Mercenary', 'Witchhunter', 'Gemling Legionnaire'],
+        monk: ['Monk', 'Invoker', 'Acolyte of Chayula'],
+        warrior: ['Warrior', 'Slayer', 'Juggernaut', 'Berserker', 'Titan'],
+        templar: ['Templar', 'Hierophant', 'Inquisitor', 'Guardian']
     },
 
     // Tags to avoid mapping
