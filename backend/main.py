@@ -13,6 +13,7 @@ from backend.db import init_db
 from backend.api.trade import router as trade_router, trade_client
 from backend.api.builds import router as builds_router
 from backend.api.prices import router as prices_router
+from backend.api.interview import router as interview_router
 
 # Configure logging
 logging.basicConfig(
@@ -58,6 +59,7 @@ app.add_middleware(
 app.include_router(trade_router, prefix="/api")
 app.include_router(builds_router, prefix="/api")
 app.include_router(prices_router, prefix="/api")
+app.include_router(interview_router, prefix="/api")
 
 
 # Health check

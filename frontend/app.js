@@ -6,20 +6,30 @@ const API_BASE = '/api';
 
 // State
 let builds = [];
+let archetypes = [];
 let currentBuildItems = [];
 let uniqueItems = null;
+
+// Interview state
+let interviewSession = null;
+let interviewQuestions = [];
+let currentQuestionIndex = 0;
+let interviewResponses = {};
 
 // DOM Elements
 const tabs = document.querySelectorAll('.tab');
 const tabContents = document.querySelectorAll('.tab-content');
 const buildsList = document.getElementById('builds-list');
 const buildModal = document.getElementById('build-modal');
+const archetypeModal = document.getElementById('archetype-modal');
+const createModal = document.getElementById('create-modal');
 const itemModal = document.getElementById('item-modal');
 
 // Initialize
 document.addEventListener('DOMContentLoaded', () => {
     initTabs();
     loadBuilds();
+    loadArchetypes();
     loadUniqueItems();
     loadCurrencyRates();
     initEventListeners();
@@ -42,19 +52,36 @@ function initTabs() {
 
 // Event Listeners
 function initEventListeners() {
-    // Refresh builds
+    // Build Finder
+    document.getElementById('start-interview').addEventListener('click', startInterview);
+    document.getElementById('wizard-back').addEventListener('click', prevQuestion);
+    document.getElementById('wizard-next').addEventListener('click', nextQuestion);
+    document.getElementById('wizard-finish').addEventListener('click', finishInterview);
+    document.getElementById('restart-interview').addEventListener('click', resetInterview);
+
+    // Quick filters
+    document.querySelectorAll('.quick-filter').forEach(btn => {
+        btn.addEventListener('click', () => handleQuickFilter(btn.dataset.filter));
+    });
+
+    // Builds
     document.getElementById('refresh-builds').addEventListener('click', loadBuilds);
+    document.getElementById('create-manual-build').addEventListener('click', () => {
+        createModal.classList.remove('hidden');
+    });
 
     // Create build form
     document.getElementById('create-build-form').addEventListener('submit', handleCreateBuild);
-
-    // Add item button
     document.getElementById('add-item').addEventListener('click', () => {
         itemModal.classList.remove('hidden');
     });
 
     // Add item form
     document.getElementById('add-item-form').addEventListener('submit', handleAddItem);
+
+    // Archetypes
+    document.getElementById('filter-class').addEventListener('change', loadArchetypes);
+    document.getElementById('filter-playstyle').addEventListener('change', loadArchetypes);
 
     // Price lookup
     document.getElementById('price-lookup-form').addEventListener('submit', handlePriceLookup);
@@ -66,6 +93,8 @@ function initEventListeners() {
     document.querySelectorAll('.modal-close').forEach(btn => {
         btn.addEventListener('click', () => {
             buildModal.classList.add('hidden');
+            archetypeModal.classList.add('hidden');
+            createModal.classList.add('hidden');
             itemModal.classList.add('hidden');
         });
     });
@@ -73,35 +102,458 @@ function initEventListeners() {
     // Close modals on outside click
     window.addEventListener('click', (e) => {
         if (e.target === buildModal) buildModal.classList.add('hidden');
+        if (e.target === archetypeModal) archetypeModal.classList.add('hidden');
+        if (e.target === createModal) createModal.classList.add('hidden');
         if (e.target === itemModal) itemModal.classList.add('hidden');
     });
 }
 
-// API Functions
-async function apiCall(endpoint, options = {}) {
+// ============================================
+// Interview / Build Finder
+// ============================================
+
+async function startInterview() {
     try {
-        const response = await fetch(`${API_BASE}${endpoint}`, {
-            headers: {
-                'Content-Type': 'application/json',
-                ...options.headers,
-            },
-            ...options,
-        });
+        const data = await apiCall('/interview/start', { method: 'POST' });
+        interviewSession = data.session_id;
+        interviewQuestions = data.questions;
+        currentQuestionIndex = 0;
+        interviewResponses = {};
 
-        if (!response.ok) {
-            const error = await response.json().catch(() => ({}));
-            throw new Error(error.detail || `HTTP error ${response.status}`);
-        }
+        document.getElementById('finder-intro').classList.add('hidden');
+        document.getElementById('interview-wizard').classList.remove('hidden');
+        document.getElementById('recommendations-results').classList.add('hidden');
 
-        if (response.status === 204) return null;
-        return response.json();
+        renderQuestion();
     } catch (error) {
-        console.error('API Error:', error);
-        throw error;
+        alert('Error starting interview: ' + error.message);
     }
 }
 
-// Load Builds
+function renderQuestion() {
+    const question = interviewQuestions[currentQuestionIndex];
+    const questionDiv = document.getElementById('wizard-question');
+    const total = interviewQuestions.length;
+    const progress = ((currentQuestionIndex + 1) / total) * 100;
+
+    document.getElementById('wizard-progress-fill').style.width = `${progress}%`;
+    document.getElementById('wizard-progress-text').textContent = `Question ${currentQuestionIndex + 1} of ${total}`;
+
+    let optionsHtml = '';
+    const currentValue = interviewResponses[question.id];
+
+    if (question.type === 'select') {
+        optionsHtml = `<div class="wizard-options">
+            ${question.options.map(opt => `
+                <div class="wizard-option ${currentValue === opt.value ? 'selected' : ''}" onclick="selectOption('${question.id}', '${opt.value}', this)">
+                    <input type="radio" name="${question.id}" value="${opt.value}" ${currentValue === opt.value ? 'checked' : ''}>
+                    <label>${escapeHtml(opt.label)}</label>
+                </div>
+            `).join('')}
+        </div>`;
+    } else if (question.type === 'multiselect') {
+        const selectedValues = Array.isArray(currentValue) ? currentValue : [];
+        optionsHtml = `<div class="wizard-options">
+            ${question.options.map(opt => `
+                <div class="wizard-option ${selectedValues.includes(opt.value) ? 'selected' : ''}" onclick="toggleMultiOption('${question.id}', '${opt.value}', this)">
+                    <input type="checkbox" name="${question.id}" value="${opt.value}" ${selectedValues.includes(opt.value) ? 'checked' : ''}>
+                    <label>${escapeHtml(opt.label)}</label>
+                </div>
+            `).join('')}
+        </div>`;
+    } else if (question.type === 'text') {
+        optionsHtml = `<input type="text" class="wizard-text-input" id="text-${question.id}"
+            placeholder="${question.placeholder || ''}" value="${currentValue || ''}"
+            onchange="updateTextResponse('${question.id}', this.value)">`;
+    }
+
+    questionDiv.innerHTML = `
+        <h3>${escapeHtml(question.question)}</h3>
+        ${optionsHtml}
+    `;
+
+    // Update button states
+    document.getElementById('wizard-back').disabled = currentQuestionIndex === 0;
+
+    const isLastQuestion = currentQuestionIndex === interviewQuestions.length - 1;
+    document.getElementById('wizard-next').classList.toggle('hidden', isLastQuestion);
+    document.getElementById('wizard-finish').classList.toggle('hidden', !isLastQuestion);
+}
+
+// Global functions for onclick handlers
+window.selectOption = function(questionId, value, element) {
+    interviewResponses[questionId] = value;
+
+    // Update UI
+    element.parentElement.querySelectorAll('.wizard-option').forEach(opt => {
+        opt.classList.remove('selected');
+        opt.querySelector('input').checked = false;
+    });
+    element.classList.add('selected');
+    element.querySelector('input').checked = true;
+};
+
+window.toggleMultiOption = function(questionId, value, element) {
+    if (!interviewResponses[questionId]) {
+        interviewResponses[questionId] = [];
+    }
+
+    const index = interviewResponses[questionId].indexOf(value);
+    if (index > -1) {
+        interviewResponses[questionId].splice(index, 1);
+        element.classList.remove('selected');
+        element.querySelector('input').checked = false;
+    } else {
+        interviewResponses[questionId].push(value);
+        element.classList.add('selected');
+        element.querySelector('input').checked = true;
+    }
+};
+
+window.updateTextResponse = function(questionId, value) {
+    interviewResponses[questionId] = value;
+};
+
+function nextQuestion() {
+    const question = interviewQuestions[currentQuestionIndex];
+
+    // Validate required questions
+    if (question.required && !interviewResponses[question.id]) {
+        alert('Please answer this question before continuing.');
+        return;
+    }
+
+    if (currentQuestionIndex < interviewQuestions.length - 1) {
+        currentQuestionIndex++;
+        renderQuestion();
+    }
+}
+
+function prevQuestion() {
+    if (currentQuestionIndex > 0) {
+        currentQuestionIndex--;
+        renderQuestion();
+    }
+}
+
+async function finishInterview() {
+    try {
+        // Save responses
+        await apiCall(`/interview/session/${interviewSession}`, {
+            method: 'PUT',
+            body: JSON.stringify({ responses: interviewResponses }),
+        });
+
+        // Get recommendations
+        const data = await apiCall(`/interview/session/${interviewSession}/recommendations?limit=5`);
+
+        document.getElementById('interview-wizard').classList.add('hidden');
+        document.getElementById('recommendations-results').classList.remove('hidden');
+
+        renderRecommendations(data);
+    } catch (error) {
+        alert('Error getting recommendations: ' + error.message);
+    }
+}
+
+function renderRecommendations(data) {
+    const summaryDiv = document.getElementById('results-summary');
+    const gridDiv = document.getElementById('recommendations-grid');
+
+    const budgetName = data.budget_info.name || data.budget_info.tier;
+    summaryDiv.innerHTML = `
+        <p>Based on your preferences, here are the best builds for you:</p>
+        <span class="budget-info">Budget: ${budgetName} (${formatBudgetRange(data.budget_info.min, data.budget_info.max)})</span>
+    `;
+
+    if (data.recommendations.length === 0) {
+        gridDiv.innerHTML = '<p class="text-muted">No matching builds found. Try adjusting your preferences.</p>';
+        return;
+    }
+
+    gridDiv.innerHTML = data.recommendations.map(rec => {
+        const arch = rec.archetype;
+        const tier = rec.recommended_tier;
+
+        return `
+            <div class="recommendation-card">
+                <div class="recommendation-header">
+                    <div>
+                        <h3>${escapeHtml(arch.name)}</h3>
+                        <div class="recommendation-meta">
+                            <span class="tag">${escapeHtml(arch.class_name)}</span>
+                            <span class="tag">${escapeHtml(arch.primary_playstyle)}</span>
+                            <span class="tag">${escapeHtml(arch.damage_type)}</span>
+                        </div>
+                    </div>
+                    <div class="match-score">
+                        <div class="score">${rec.match_percentage}%</div>
+                        <div class="label">match</div>
+                    </div>
+                </div>
+
+                <p class="recommendation-description">${escapeHtml(arch.description || '')}</p>
+
+                ${arch.pros && arch.pros.length > 0 ? `
+                <div class="pros-cons">
+                    <div class="pros">
+                        <h4>Pros</h4>
+                        <ul>
+                            ${arch.pros.slice(0, 3).map(p => `<li>${escapeHtml(p)}</li>`).join('')}
+                        </ul>
+                    </div>
+                    <div class="cons">
+                        <h4>Cons</h4>
+                        <ul>
+                            ${(arch.cons || []).slice(0, 3).map(c => `<li>${escapeHtml(c)}</li>`).join('')}
+                        </ul>
+                    </div>
+                </div>
+                ` : ''}
+
+                <div class="recommendation-tiers">
+                    ${rec.all_tiers.map(t => `
+                        <div class="tier-card ${tier && t.id === tier.id ? 'recommended' : ''}"
+                             onclick="viewArchetypeDetail('${arch.id}')">
+                            <div class="tier-name">${escapeHtml(t.tier_name)}</div>
+                            <div class="tier-cost">${formatBudgetRange(t.min_budget, t.max_budget)}</div>
+                            ${tier && t.id === tier.id ? '<div class="tier-range">Recommended</div>' : ''}
+                        </div>
+                    `).join('')}
+                </div>
+
+                <div class="recommendation-actions">
+                    <button class="btn btn-primary" onclick="viewArchetypeDetail('${arch.id}')">View Details</button>
+                    ${tier ? `<button class="btn btn-secondary" onclick="createBuildFromTier('${tier.id}', '${escapeHtml(arch.name)}')">Add to My Builds</button>` : ''}
+                </div>
+            </div>
+        `;
+    }).join('');
+}
+
+function resetInterview() {
+    interviewSession = null;
+    currentQuestionIndex = 0;
+    interviewResponses = {};
+
+    document.getElementById('finder-intro').classList.remove('hidden');
+    document.getElementById('interview-wizard').classList.add('hidden');
+    document.getElementById('recommendations-results').classList.add('hidden');
+}
+
+async function handleQuickFilter(filter) {
+    try {
+        // Map filter to quick recommend params
+        const params = {
+            'league-start': { budget: 'starter' },
+            'boss-killer': { budget: 'mid', content_focus: 'bossing' },
+            'fast-mapper': { budget: 'mid', content_focus: 'mapping' },
+            'tanky': { budget: 'mid' },
+        };
+
+        const data = await apiCall('/interview/quick-recommend?limit=5', {
+            method: 'POST',
+            body: JSON.stringify(params[filter] || {}),
+        });
+
+        document.getElementById('finder-intro').classList.add('hidden');
+        document.getElementById('interview-wizard').classList.add('hidden');
+        document.getElementById('recommendations-results').classList.remove('hidden');
+
+        // Format for renderRecommendations
+        const formattedData = {
+            recommendations: data.recommendations,
+            budget_info: { name: filter.replace('-', ' '), min: 0, max: null },
+        };
+        renderRecommendations(formattedData);
+    } catch (error) {
+        alert('Error getting quick recommendations: ' + error.message);
+    }
+}
+
+// ============================================
+// Archetypes
+// ============================================
+
+async function loadArchetypes() {
+    const container = document.getElementById('archetypes-list');
+    container.innerHTML = '<p class="loading">Loading archetypes...</p>';
+
+    try {
+        const classFilter = document.getElementById('filter-class').value;
+        const playstyleFilter = document.getElementById('filter-playstyle').value;
+
+        let url = '/interview/archetypes';
+        const params = new URLSearchParams();
+        if (classFilter) params.append('class_name', classFilter);
+        if (playstyleFilter) params.append('playstyle', playstyleFilter);
+        if (params.toString()) url += '?' + params.toString();
+
+        const data = await apiCall(url);
+        archetypes = data.archetypes;
+        renderArchetypes();
+    } catch (error) {
+        container.innerHTML = `<p class="text-danger">Error loading archetypes: ${error.message}</p>`;
+    }
+}
+
+function renderArchetypes() {
+    const container = document.getElementById('archetypes-list');
+
+    if (archetypes.length === 0) {
+        container.innerHTML = '<p class="text-muted">No archetypes found. Run the seed script to populate data.</p>';
+        return;
+    }
+
+    container.innerHTML = archetypes.map(arch => `
+        <div class="archetype-card" onclick="viewArchetypeDetail('${arch.id}')">
+            <h3>${escapeHtml(arch.name)}</h3>
+            <div class="meta">
+                <span>${escapeHtml(arch.class_name)}</span>
+                <span>${escapeHtml(arch.primary_playstyle)}</span>
+                <span>${escapeHtml(arch.damage_type)}</span>
+            </div>
+            <p class="text-muted">${escapeHtml((arch.description || '').substring(0, 100))}...</p>
+            <div class="scores">
+                <div class="score-item">
+                    <div class="value ${getScoreClass(arch.mapping_score)}">${arch.mapping_score}</div>
+                    <div class="label">Mapping</div>
+                </div>
+                <div class="score-item">
+                    <div class="value ${getScoreClass(arch.bossing_score)}">${arch.bossing_score}</div>
+                    <div class="label">Bossing</div>
+                </div>
+                <div class="score-item">
+                    <div class="value ${getScoreClass(arch.league_start_score)}">${arch.league_start_score}</div>
+                    <div class="label">League Start</div>
+                </div>
+            </div>
+        </div>
+    `).join('');
+}
+
+window.viewArchetypeDetail = async function(archetypeId) {
+    try {
+        const data = await apiCall(`/interview/archetypes/${archetypeId}`);
+        renderArchetypeDetail(data);
+        archetypeModal.classList.remove('hidden');
+    } catch (error) {
+        alert('Error loading archetype: ' + error.message);
+    }
+};
+
+function renderArchetypeDetail(data) {
+    const arch = data.archetype;
+    const tiers = data.tiers;
+    const detailDiv = document.getElementById('archetype-detail');
+
+    detailDiv.innerHTML = `
+        <div class="archetype-detail-header">
+            <h2>${escapeHtml(arch.name)}</h2>
+            <div class="meta">
+                <span class="badge">${escapeHtml(arch.class_name)}</span>
+                <span class="badge">${escapeHtml(arch.primary_playstyle)}</span>
+                <span class="badge">${escapeHtml(arch.damage_type)}</span>
+                <span class="badge">Complexity: ${'*'.repeat(arch.complexity)}</span>
+            </div>
+            <div class="archetype-scores">
+                <div class="score-box">
+                    <div class="value ${getScoreClass(arch.mapping_score)}">${arch.mapping_score}/10</div>
+                    <div class="label">Mapping</div>
+                </div>
+                <div class="score-box">
+                    <div class="value ${getScoreClass(arch.bossing_score)}">${arch.bossing_score}/10</div>
+                    <div class="label">Bossing</div>
+                </div>
+                <div class="score-box">
+                    <div class="value ${getScoreClass(arch.league_start_score)}">${arch.league_start_score}/10</div>
+                    <div class="label">League Start</div>
+                </div>
+            </div>
+        </div>
+
+        <p class="archetype-description">${escapeHtml(arch.description || '')}</p>
+
+        ${arch.pros && arch.pros.length > 0 ? `
+        <div class="pros-cons">
+            <div class="pros">
+                <h4>Pros</h4>
+                <ul>
+                    ${arch.pros.map(p => `<li>${escapeHtml(p)}</li>`).join('')}
+                </ul>
+            </div>
+            <div class="cons">
+                <h4>Cons</h4>
+                <ul>
+                    ${(arch.cons || []).map(c => `<li>${escapeHtml(c)}</li>`).join('')}
+                </ul>
+            </div>
+        </div>
+        ` : ''}
+
+        ${arch.playstyle_notes || arch.leveling_notes ? `
+        <div class="archetype-notes">
+            ${arch.playstyle_notes ? `<h4>Playstyle</h4><p>${escapeHtml(arch.playstyle_notes)}</p>` : ''}
+            ${arch.leveling_notes ? `<h4>Leveling</h4><p>${escapeHtml(arch.leveling_notes)}</p>` : ''}
+        </div>
+        ` : ''}
+
+        <div class="tiers-section">
+            <h3>Budget Tiers</h3>
+            ${tiers.map(tier => `
+                <div class="tier-detail">
+                    <div class="tier-detail-header">
+                        <h4>${escapeHtml(tier.tier_name)}</h4>
+                        <span class="cost">${formatBudgetRange(tier.min_budget, tier.max_budget)}</span>
+                    </div>
+                    ${tier.description ? `<p class="text-muted">${escapeHtml(tier.description)}</p>` : ''}
+
+                    <div class="tier-detail-items">
+                        ${tier.items.map(item => `
+                            <div class="tier-item">
+                                <span class="slot">${formatSlot(item.slot)}</span>
+                                <span class="name">${escapeHtml(item.item_name)}</span>
+                                <span class="priority ${item.priority === 1 ? 'core' : ''}">${formatPriority(item.priority)}</span>
+                            </div>
+                        `).join('')}
+                    </div>
+
+                    ${tier.upgrade_notes ? `<p class="text-muted mt-10"><strong>Next upgrades:</strong> ${escapeHtml(tier.upgrade_notes)}</p>` : ''}
+
+                    <div class="tier-actions">
+                        <button class="btn btn-primary btn-small" onclick="createBuildFromTier('${tier.id}', '${escapeHtml(arch.name)} (${escapeHtml(tier.tier_name)})')">Add to My Builds</button>
+                    </div>
+                </div>
+            `).join('')}
+        </div>
+    `;
+}
+
+window.createBuildFromTier = async function(tierId, buildName) {
+    try {
+        const data = await apiCall('/interview/create-build', {
+            method: 'POST',
+            body: JSON.stringify({
+                tier_id: tierId,
+                build_name: buildName,
+            }),
+        });
+
+        alert('Build created successfully!');
+        archetypeModal.classList.add('hidden');
+
+        // Switch to builds tab and refresh
+        document.querySelector('.tab[data-tab="builds"]').click();
+        loadBuilds();
+    } catch (error) {
+        alert('Error creating build: ' + error.message);
+    }
+};
+
+// ============================================
+// Builds (My Builds)
+// ============================================
+
 async function loadBuilds() {
     buildsList.innerHTML = '<p class="loading">Loading builds...</p>';
 
@@ -116,7 +568,7 @@ async function loadBuilds() {
 
 function renderBuilds() {
     if (builds.length === 0) {
-        buildsList.innerHTML = '<p class="text-muted">No builds yet. Create one to get started!</p>';
+        buildsList.innerHTML = '<p class="text-muted">No builds yet. Use the Build Finder or create one manually!</p>';
         return;
     }
 
@@ -148,14 +600,12 @@ function renderBuilds() {
     });
 }
 
-// View Build with Prices
 async function viewBuild(buildId) {
     const build = builds.find(b => b.id === buildId);
     if (!build) return;
 
     const buildDetail = document.getElementById('build-detail');
 
-    // Show modal with loading state
     buildDetail.innerHTML = `
         <div class="build-detail-header">
             <div>
@@ -175,7 +625,7 @@ async function viewBuild(buildId) {
             </thead>
             <tbody>
                 ${build.items.map(item => `
-                    <tr data-item="${item.item_name}">
+                    <tr data-item="${escapeHtml(item.item_name)}">
                         <td>${formatSlot(item.slot)}</td>
                         <td>${escapeHtml(item.item_name)}</td>
                         <td>${formatPriority(item.priority)}</td>
@@ -226,7 +676,6 @@ function updateBuildPrices(priceData) {
     document.getElementById('core-cost').textContent = `(Core items: ${priceData.core_cost.toFixed(1)} chaos)`;
 }
 
-// Delete Build
 async function deleteBuild(buildId) {
     if (!confirm('Are you sure you want to delete this build?')) return;
 
@@ -238,7 +687,6 @@ async function deleteBuild(buildId) {
     }
 }
 
-// Create Build
 async function handleCreateBuild(e) {
     e.preventDefault();
 
@@ -262,17 +710,14 @@ async function handleCreateBuild(e) {
         currentBuildItems = [];
         renderCurrentItems();
 
-        // Switch to builds tab and refresh
-        document.querySelector('.tab[data-tab="builds"]').click();
+        createModal.classList.add('hidden');
         loadBuilds();
-
         alert('Build created successfully!');
     } catch (error) {
         alert(`Error creating build: ${error.message}`);
     }
 }
 
-// Add Item to Current Build
 function handleAddItem(e) {
     e.preventDefault();
 
@@ -285,7 +730,6 @@ function handleAddItem(e) {
         required: true,
     };
 
-    // Check for duplicate slot
     const existingIndex = currentBuildItems.findIndex(i => i.slot === item.slot);
     if (existingIndex >= 0) {
         currentBuildItems[existingIndex] = item;
@@ -315,7 +759,6 @@ function renderCurrentItems() {
         </div>
     `).join('');
 
-    // Add remove listeners
     container.querySelectorAll('.remove-item').forEach(btn => {
         btn.addEventListener('click', () => {
             currentBuildItems.splice(parseInt(btn.dataset.index), 1);
@@ -324,7 +767,10 @@ function renderCurrentItems() {
     });
 }
 
+// ============================================
 // Price Lookup
+// ============================================
+
 async function handlePriceLookup(e) {
     e.preventDefault();
 
@@ -387,7 +833,10 @@ async function handlePriceLookup(e) {
     }
 }
 
-// Currency Rates
+// ============================================
+// Currency
+// ============================================
+
 async function loadCurrencyRates() {
     const container = document.getElementById('currency-rates');
 
@@ -407,7 +856,6 @@ async function loadCurrencyRates() {
     }
 }
 
-// Currency Converter
 async function handleCurrencyConvert(e) {
     e.preventDefault();
 
@@ -436,12 +884,14 @@ async function handleCurrencyConvert(e) {
     }
 }
 
-// Load Unique Items for Autocomplete
+// ============================================
+// Unique Items Autocomplete
+// ============================================
+
 async function loadUniqueItems() {
     try {
         const response = await fetch('/static/unique_items.json');
         if (!response.ok) {
-            // Try data folder
             const dataResponse = await fetch('/data/unique_items.json');
             if (dataResponse.ok) {
                 uniqueItems = await dataResponse.json();
@@ -479,7 +929,37 @@ function populateItemSuggestions() {
     });
 }
 
+// ============================================
+// API Helper
+// ============================================
+
+async function apiCall(endpoint, options = {}) {
+    try {
+        const response = await fetch(`${API_BASE}${endpoint}`, {
+            headers: {
+                'Content-Type': 'application/json',
+                ...options.headers,
+            },
+            ...options,
+        });
+
+        if (!response.ok) {
+            const error = await response.json().catch(() => ({}));
+            throw new Error(error.detail || `HTTP error ${response.status}`);
+        }
+
+        if (response.status === 204) return null;
+        return response.json();
+    } catch (error) {
+        console.error('API Error:', error);
+        throw error;
+    }
+}
+
+// ============================================
 // Utility Functions
+// ============================================
+
 function escapeHtml(text) {
     if (!text) return '';
     const div = document.createElement('div');
@@ -525,4 +1005,24 @@ function getPriorityClass(priority) {
         3: 'luxury',
     };
     return classes[priority] || '';
+}
+
+function getScoreClass(score) {
+    if (score >= 8) return 'score-high';
+    if (score >= 5) return 'score-medium';
+    return 'score-low';
+}
+
+function formatBudgetRange(min, max) {
+    if (max === null || max === undefined) {
+        return `${formatNumber(min)}+ chaos`;
+    }
+    return `${formatNumber(min)}-${formatNumber(max)}c`;
+}
+
+function formatNumber(num) {
+    if (num >= 1000) {
+        return (num / 1000).toFixed(1) + 'k';
+    }
+    return Math.round(num).toString();
 }

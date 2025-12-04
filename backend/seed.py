@@ -6,6 +6,7 @@ from pathlib import Path
 
 from backend.db import SessionLocal, init_db
 from backend.models.build import Build, BuildItem
+from backend.models.interview import BuildArchetype, BudgetTier
 
 logger = logging.getLogger(__name__)
 
@@ -71,13 +72,89 @@ def seed_builds():
         db.close()
 
 
+def seed_archetypes():
+    """Load build archetypes from JSON file."""
+    seed_file = Path(__file__).parent.parent / "data" / "archetypes.json"
+
+    if not seed_file.exists():
+        logger.warning(f"Archetypes file not found: {seed_file}")
+        return
+
+    with open(seed_file) as f:
+        archetypes_data = json.load(f)
+
+    db = SessionLocal()
+
+    try:
+        for arch_data in archetypes_data:
+            # Check if archetype already exists
+            existing = (
+                db.query(BuildArchetype)
+                .filter(BuildArchetype.slug == arch_data["slug"])
+                .first()
+            )
+            if existing:
+                logger.info(f"Archetype '{arch_data['name']}' already exists, skipping")
+                continue
+
+            # Create archetype
+            archetype = BuildArchetype(
+                name=arch_data["name"],
+                slug=arch_data["slug"],
+                class_name=arch_data["class_name"],
+                primary_playstyle=arch_data["primary_playstyle"],
+                damage_type=arch_data["damage_type"],
+                mapping_score=arch_data.get("mapping_score", 5),
+                bossing_score=arch_data.get("bossing_score", 5),
+                league_start_score=arch_data.get("league_start_score", 5),
+                complexity=arch_data.get("complexity", 2),
+                description=arch_data.get("description"),
+                playstyle_notes=arch_data.get("playstyle_notes"),
+                leveling_notes=arch_data.get("leveling_notes"),
+            )
+            archetype.tags = arch_data.get("tags", [])
+            archetype.pros = arch_data.get("pros", [])
+            archetype.cons = arch_data.get("cons", [])
+
+            db.add(archetype)
+            db.flush()
+
+            # Create budget tiers
+            for tier_data in arch_data.get("tiers", []):
+                tier = BudgetTier(
+                    archetype_id=archetype.id,
+                    tier_name=tier_data["tier_name"],
+                    tier_order=tier_data.get("tier_order", 1),
+                    min_budget=tier_data.get("min_budget", 0),
+                    max_budget=tier_data.get("max_budget"),
+                    description=tier_data.get("description"),
+                    upgrade_notes=tier_data.get("upgrade_notes"),
+                )
+                tier.items = tier_data.get("items", [])
+                db.add(tier)
+
+            logger.info(f"Created archetype: {arch_data['name']} with {len(arch_data.get('tiers', []))} tiers")
+
+        db.commit()
+        logger.info("Archetypes loaded successfully")
+
+    except Exception as e:
+        logger.error(f"Error loading archetypes: {e}")
+        db.rollback()
+        raise
+    finally:
+        db.close()
+
+
 def main():
     """Main entry point for seeding."""
     logging.basicConfig(level=logging.INFO)
     logger.info("Initializing database...")
     init_db()
-    logger.info("Loading seed data...")
+    logger.info("Loading seed builds...")
     seed_builds()
+    logger.info("Loading archetypes...")
+    seed_archetypes()
     logger.info("Done!")
 
 

@@ -33,5 +33,5 @@ def get_db():
 
 def init_db():
     """Initialize database tables."""
-    from backend.models import build, price  # noqa: F401
+    from backend.models import build, price, interview  # noqa: F401
     Base.metadata.create_all(bind=engine)

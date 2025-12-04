@@ -10,63 +10,110 @@
     <div class="container">
         <header>
             <h1>PoE2 Build Tracker</h1>
-            <p class="subtitle">Track prices for your Path of Exile 2 builds</p>
+            <p class="subtitle">Find the perfect build for your playstyle and budget</p>
         </header>
 
         <nav class="tabs">
-            <button class="tab active" data-tab="builds">Builds</button>
-            <button class="tab" data-tab="create">Create Build</button>
+            <button class="tab active" data-tab="finder">Build Finder</button>
+            <button class="tab" data-tab="builds">My Builds</button>
+            <button class="tab" data-tab="archetypes">Browse Builds</button>
             <button class="tab" data-tab="prices">Price Lookup</button>
             <button class="tab" data-tab="currency">Currency</button>
         </nav>
 
-        <!-- Builds Tab -->
-        <section id="builds" class="tab-content active">
+        <!-- Build Finder / Interview Tab -->
+        <section id="finder" class="tab-content active">
+            <div class="finder-intro" id="finder-intro">
+                <h2>What do you want to build?</h2>
+                <p>Answer a few questions and we'll recommend builds that match your playstyle, budget, and goals.</p>
+                <button id="start-interview" class="btn btn-primary btn-large">Start Build Interview</button>
+
+                <div class="quick-filters">
+                    <h3>Or quick filter:</h3>
+                    <div class="quick-filter-buttons">
+                        <button class="btn btn-secondary quick-filter" data-filter="league-start">League Starters</button>
+                        <button class="btn btn-secondary quick-filter" data-filter="boss-killer">Boss Killers</button>
+                        <button class="btn btn-secondary quick-filter" data-filter="fast-mapper">Speed Mappers</button>
+                        <button class="btn btn-secondary quick-filter" data-filter="tanky">Tanky Builds</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Interview Wizard -->
+            <div id="interview-wizard" class="interview-wizard hidden">
+                <div class="wizard-progress">
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="wizard-progress-fill"></div>
+                    </div>
+                    <span class="progress-text" id="wizard-progress-text">Question 1 of 10</span>
+                </div>
+
+                <div class="wizard-question" id="wizard-question">
+                    <!-- Question will be rendered here -->
+                </div>
+
+                <div class="wizard-actions">
+                    <button id="wizard-back" class="btn btn-secondary" disabled>Back</button>
+                    <button id="wizard-next" class="btn btn-primary">Next</button>
+                    <button id="wizard-finish" class="btn btn-primary hidden">Get Recommendations</button>
+                </div>
+            </div>
+
+            <!-- Recommendations Results -->
+            <div id="recommendations-results" class="recommendations-results hidden">
+                <div class="results-header">
+                    <h2>Recommended Builds</h2>
+                    <button id="restart-interview" class="btn btn-secondary">Start Over</button>
+                </div>
+                <div class="results-summary" id="results-summary">
+                    <!-- Summary will be rendered here -->
+                </div>
+                <div class="recommendations-grid" id="recommendations-grid">
+                    <!-- Recommendations will be rendered here -->
+                </div>
+            </div>
+        </section>
+
+        <!-- My Builds Tab -->
+        <section id="builds" class="tab-content">
             <div class="section-header">
                 <h2>Your Builds</h2>
-                <button id="refresh-builds" class="btn btn-secondary">Refresh</button>
+                <div class="header-actions">
+                    <button id="create-manual-build" class="btn btn-primary">+ Create Build</button>
+                    <button id="refresh-builds" class="btn btn-secondary">Refresh</button>
+                </div>
             </div>
             <div id="builds-list" class="builds-grid">
                 <p class="loading">Loading builds...</p>
             </div>
         </section>
 
-        <!-- Create Build Tab -->
-        <section id="create" class="tab-content">
-            <h2>Create New Build</h2>
-            <form id="create-build-form" class="build-form">
-                <div class="form-group">
-                    <label for="build-name">Build Name</label>
-                    <input type="text" id="build-name" required placeholder="e.g., Blackflame Blood Mage">
-                </div>
-                <div class="form-group">
-                    <label for="build-class">Class</label>
-                    <select id="build-class">
-                        <option value="">Select class...</option>
-                        <option value="Blood Mage">Blood Mage</option>
-                        <option value="Necromancer">Necromancer</option>
-                        <option value="Ranger">Ranger</option>
-                        <option value="Slayer">Slayer</option>
-                        <option value="Monk">Monk</option>
-                        <option value="Sorceress">Sorceress</option>
-                        <option value="Mercenary">Mercenary</option>
-                        <option value="Witch">Witch</option>
-                        <option value="Warrior">Warrior</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label for="build-description">Description</label>
-                    <textarea id="build-description" rows="3" placeholder="Optional build description..."></textarea>
-                </div>
-
-                <h3>Items</h3>
-                <div id="items-container" class="items-container">
-                    <!-- Item slots will be rendered here -->
-                </div>
-
-                <button type="button" id="add-item" class="btn btn-secondary">+ Add Item</button>
-                <button type="submit" class="btn btn-primary">Create Build</button>
-            </form>
+        <!-- Browse Archetypes Tab -->
+        <section id="archetypes" class="tab-content">
+            <div class="section-header">
+                <h2>Browse Build Archetypes</h2>
+            </div>
+            <div class="archetype-filters">
+                <select id="filter-class">
+                    <option value="">All Classes</option>
+                    <option value="witch">Witch</option>
+                    <option value="sorceress">Sorceress</option>
+                    <option value="ranger">Ranger</option>
+                    <option value="mercenary">Mercenary</option>
+                    <option value="monk">Monk</option>
+                    <option value="warrior">Warrior</option>
+                </select>
+                <select id="filter-playstyle">
+                    <option value="">All Playstyles</option>
+                    <option value="melee">Melee</option>
+                    <option value="ranged">Ranged</option>
+                    <option value="spell">Spell</option>
+                    <option value="minion">Minion</option>
+                </select>
+            </div>
+            <div id="archetypes-list" class="builds-grid">
+                <p class="loading">Loading archetypes...</p>
+            </div>
         </section>
 
         <!-- Price Lookup Tab -->
@@ -133,11 +180,62 @@
 
         <!-- Build Detail Modal -->
         <div id="build-modal" class="modal hidden">
-            <div class="modal-content">
+            <div class="modal-content modal-large">
                 <span class="modal-close">&times;</span>
                 <div id="build-detail">
                     <!-- Build details will be rendered here -->
                 </div>
+            </div>
+        </div>
+
+        <!-- Archetype Detail Modal -->
+        <div id="archetype-modal" class="modal hidden">
+            <div class="modal-content modal-large">
+                <span class="modal-close">&times;</span>
+                <div id="archetype-detail">
+                    <!-- Archetype details will be rendered here -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Create Build Modal -->
+        <div id="create-modal" class="modal hidden">
+            <div class="modal-content">
+                <span class="modal-close">&times;</span>
+                <h2>Create New Build</h2>
+                <form id="create-build-form" class="build-form">
+                    <div class="form-group">
+                        <label for="build-name">Build Name</label>
+                        <input type="text" id="build-name" required placeholder="e.g., Blackflame Blood Mage">
+                    </div>
+                    <div class="form-group">
+                        <label for="build-class">Class</label>
+                        <select id="build-class">
+                            <option value="">Select class...</option>
+                            <option value="Blood Mage">Blood Mage</option>
+                            <option value="Necromancer">Necromancer</option>
+                            <option value="Ranger">Ranger</option>
+                            <option value="Slayer">Slayer</option>
+                            <option value="Monk">Monk</option>
+                            <option value="Sorceress">Sorceress</option>
+                            <option value="Mercenary">Mercenary</option>
+                            <option value="Witch">Witch</option>
+                            <option value="Warrior">Warrior</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="build-description">Description</label>
+                        <textarea id="build-description" rows="3" placeholder="Optional build description..."></textarea>
+                    </div>
+
+                    <h3>Items</h3>
+                    <div id="items-container" class="items-container">
+                        <p class="text-muted">No items added yet. Click "Add Item" to start.</p>
+                    </div>
+
+                    <button type="button" id="add-item" class="btn btn-secondary">+ Add Item</button>
+                    <button type="submit" class="btn btn-primary">Create Build</button>
+                </form>
             </div>
         </div>
 
