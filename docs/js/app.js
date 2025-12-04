@@ -836,8 +836,14 @@ const App = {
     openModal(modalId) {
         const modal = document.getElementById(modalId);
         if (modal) {
+            // Reset scroll position to top before showing
+            modal.scrollTop = 0;
             modal.classList.add('active');
             document.body.classList.add('modal-open');
+            // Ensure scroll is at top after display (for any layout shifts)
+            requestAnimationFrame(() => {
+                modal.scrollTop = 0;
+            });
         }
     },
 
