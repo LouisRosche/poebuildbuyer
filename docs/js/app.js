@@ -361,8 +361,15 @@ const App = {
                     ).join('')}
                 </div>
 
-                <div class="arch-tiers">
-                    ${arch.tiers.length} budget tier${arch.tiers.length > 1 ? 's' : ''}
+                <div class="arch-footer">
+                    <div class="arch-tiers">
+                        ${arch.tiers.length} budget tier${arch.tiers.length > 1 ? 's' : ''}
+                    </div>
+                    <button class="btn btn-small compare-btn ${typeof Compare !== 'undefined' && Compare.isInCompare(arch.id) ? 'active' : ''}"
+                            data-compare-id="${arch.id}"
+                            onclick="event.stopPropagation(); Compare.toggleCompare('${arch.id}')">
+                        ${typeof Compare !== 'undefined' && Compare.isInCompare(arch.id) ? '✓ Compare' : '+ Compare'}
+                    </button>
                 </div>
             </div>
         `).join('');
