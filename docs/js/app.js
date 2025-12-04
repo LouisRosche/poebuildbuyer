@@ -375,6 +375,9 @@ const App = {
         const archetype = Data.getArchetype(id);
         if (!archetype) return;
 
+        // Track archetype view
+        Analytics.trackRecommendation('view', archetype.name);
+
         this.currentArchetype = archetype;
 
         const modal = document.getElementById('archetype-modal');
@@ -519,7 +522,11 @@ const App = {
                 itemsHtml += `
                     <div class="tier-item">
                         <span class="item-slot">${this.escapeHtml(item.slot)}</span>
-                        <span class="item-name ${item.is_unique ? 'unique' : 'rare'}">${this.escapeHtml(item.item_name)}</span>
+                        <span class="item-name ${item.is_unique ? 'unique' : 'rare'} has-tooltip"
+                              data-item-tooltip="true"
+                              data-item-name="${this.escapeHtml(item.item_name)}"
+                              data-item-slot="${item.slot}"
+                              data-item-unique="${item.is_unique}">${this.escapeHtml(item.item_name)}</span>
                         ${priceHtml}
                     </div>
                 `;
@@ -665,6 +672,9 @@ const App = {
         const build = Storage.getBuild(id);
         if (!build) return;
 
+        // Track build view
+        Analytics.trackBuildView(build.id, build.name, 'my-builds');
+
         const modal = document.getElementById('build-modal');
         const content = document.getElementById('build-detail');
         if (!modal || !content) return;
@@ -698,7 +708,11 @@ const App = {
                     ${itemsWithPrices.map(item => `
                         <div class="build-item">
                             <span class="item-slot">${this.escapeHtml(item.slot)}</span>
-                            <span class="item-name ${item.is_unique ? 'unique' : 'rare'}">${this.escapeHtml(item.item_name)}</span>
+                            <span class="item-name ${item.is_unique ? 'unique' : 'rare'} has-tooltip"
+                                  data-item-tooltip="true"
+                                  data-item-name="${this.escapeHtml(item.item_name)}"
+                                  data-item-slot="${item.slot}"
+                                  data-item-unique="${item.is_unique}">${this.escapeHtml(item.item_name)}</span>
                             <span class="item-price">${item.price ? Prices.formatPrice(item.price, this.currencyRates) : 'N/A'}</span>
                         </div>
                     `).join('')}

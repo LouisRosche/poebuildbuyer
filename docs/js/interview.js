@@ -222,6 +222,11 @@ const Interview = {
         this.state.active = false;
         this.cleanupKeyboardNavigation();
 
+        // Track interview completion
+        if (typeof Analytics !== 'undefined') {
+            Analytics.trackInterviewComplete(this.state.responses);
+        }
+
         // Show loading state
         const container = document.getElementById('interview-container');
         if (container) {
