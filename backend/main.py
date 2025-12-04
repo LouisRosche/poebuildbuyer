@@ -14,6 +14,9 @@ from backend.api.trade import router as trade_router, trade_client
 from backend.api.builds import router as builds_router
 from backend.api.prices import router as prices_router
 from backend.api.interview import router as interview_router
+from backend.api.archetypes import router as archetypes_router
+from backend.services.scheduler import sync_scheduler
+from backend.scrapers.aggregator import build_aggregator
 
 # Configure logging
 logging.basicConfig(
@@ -32,10 +35,19 @@ async def lifespan(app: FastAPI):
     init_db()
     logger.info("Database initialized")
 
+    # Configure and start background sync scheduler
+    sync_scheduler.configure(
+        sync_func=lambda: build_aggregator.sync_all_sources(),
+        interval_hours=6,  # Sync every 6 hours
+    )
+    await sync_scheduler.start()
+    logger.info("Background sync scheduler started")
+
     yield
 
     # Shutdown
     logger.info("Shutting down...")
+    await sync_scheduler.stop()
     await trade_client.close()
 
 
@@ -60,6 +72,7 @@ app.include_router(trade_router, prefix="/api")
 app.include_router(builds_router, prefix="/api")
 app.include_router(prices_router, prefix="/api")
 app.include_router(interview_router, prefix="/api")
+app.include_router(archetypes_router, prefix="/api")
 
 
 # Health check
