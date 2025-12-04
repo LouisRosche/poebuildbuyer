@@ -1344,3 +1344,502 @@ button:focus:not(:focus-visible),
 a:focus:not(:focus-visible) {
     outline: none;
 }
+
+/* ========================================
+   LOADING SKELETONS
+   ======================================== */
+.skeleton {
+    background: linear-gradient(90deg,
+        var(--bg-tertiary) 25%,
+        var(--bg-hover) 50%,
+        var(--bg-tertiary) 75%
+    );
+    background-size: 200% 100%;
+    animation: skeleton-shimmer 1.5s infinite;
+    border-radius: var(--radius);
+}
+
+@keyframes skeleton-shimmer {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+}
+
+.skeleton-text {
+    height: 1em;
+    margin-bottom: 0.5em;
+}
+
+.skeleton-text-sm {
+    height: 0.8em;
+    width: 60%;
+}
+
+.skeleton-price {
+    height: 1.2em;
+    width: 80px;
+    display: inline-block;
+}
+
+.skeleton-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: var(--space-sm);
+    gap: var(--space-sm);
+}
+
+.skeleton-item .skeleton-name {
+    flex: 1;
+    height: 1em;
+}
+
+.skeleton-item .skeleton-price {
+    width: 60px;
+    height: 1em;
+}
+
+.tier-items-skeleton {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-xs);
+}
+
+/* ========================================
+   SEARCH & FILTER
+   ======================================== */
+.search-filter-bar {
+    display: flex;
+    gap: var(--space-md);
+    margin-bottom: var(--space-lg);
+    flex-wrap: wrap;
+}
+
+.search-input-wrapper {
+    flex: 1;
+    min-width: 200px;
+    position: relative;
+}
+
+.search-input {
+    width: 100%;
+    padding: var(--space-sm) var(--space-md);
+    padding-left: 2.5rem;
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius);
+    color: var(--text-primary);
+    font-size: var(--font-base);
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.search-input:focus {
+    border-color: var(--accent-primary);
+    box-shadow: 0 0 0 3px rgba(88, 166, 255, 0.2);
+    outline: none;
+}
+
+.search-input::placeholder {
+    color: var(--text-muted);
+}
+
+.search-icon {
+    position: absolute;
+    left: var(--space-sm);
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--text-muted);
+    pointer-events: none;
+}
+
+.filter-buttons {
+    display: flex;
+    gap: var(--space-xs);
+    flex-wrap: wrap;
+}
+
+.filter-btn {
+    padding: var(--space-xs) var(--space-sm);
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius);
+    color: var(--text-secondary);
+    font-size: var(--font-sm);
+    cursor: pointer;
+    transition: all 0.2s;
+    white-space: nowrap;
+}
+
+.filter-btn:hover {
+    background: var(--bg-hover);
+    color: var(--text-primary);
+}
+
+.filter-btn.active {
+    background: var(--accent-primary);
+    border-color: var(--accent-primary);
+    color: white;
+}
+
+.clear-filters {
+    color: var(--text-muted);
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    font-size: var(--font-sm);
+    text-decoration: underline;
+}
+
+.clear-filters:hover {
+    color: var(--text-primary);
+}
+
+.no-results {
+    text-align: center;
+    padding: var(--space-2xl);
+    color: var(--text-secondary);
+}
+
+.no-results h3 {
+    margin-bottom: var(--space-sm);
+    color: var(--text-primary);
+}
+
+/* ========================================
+   ERROR STATES
+   ======================================== */
+.error-state {
+    background: rgba(248, 81, 73, 0.1);
+    border: 1px solid var(--accent-danger);
+    border-radius: var(--radius);
+    padding: var(--space-lg);
+    text-align: center;
+}
+
+.error-state h3 {
+    color: var(--accent-danger);
+    margin-bottom: var(--space-sm);
+}
+
+.error-state p {
+    color: var(--text-secondary);
+    margin-bottom: var(--space-md);
+}
+
+.error-inline {
+    color: var(--accent-danger);
+    font-size: var(--font-sm);
+    display: flex;
+    align-items: center;
+    gap: var(--space-xs);
+}
+
+.price-unavailable {
+    color: var(--text-muted);
+    font-style: italic;
+}
+
+.offline-indicator {
+    display: flex;
+    align-items: center;
+    gap: var(--space-xs);
+    color: var(--accent-warning);
+    font-size: var(--font-sm);
+}
+
+.offline-indicator::before {
+    content: '';
+    width: 8px;
+    height: 8px;
+    background: var(--accent-warning);
+    border-radius: 50%;
+}
+
+/* ========================================
+   PRICE CACHE INDICATOR
+   ======================================== */
+.price-status {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+    font-size: var(--font-xs);
+    color: var(--text-muted);
+    padding: var(--space-xs) var(--space-sm);
+    background: var(--bg-tertiary);
+    border-radius: var(--radius);
+}
+
+.price-status-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--accent-secondary);
+}
+
+.price-status-dot.stale {
+    background: var(--accent-warning);
+}
+
+.price-status-dot.error {
+    background: var(--accent-danger);
+}
+
+.refresh-btn {
+    background: none;
+    border: none;
+    color: var(--accent-primary);
+    cursor: pointer;
+    padding: var(--space-xs);
+    display: flex;
+    align-items: center;
+    transition: transform 0.2s;
+}
+
+.refresh-btn:hover {
+    transform: rotate(180deg);
+}
+
+.refresh-btn.loading {
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+/* ========================================
+   SMOOTH TRANSITIONS
+   ======================================== */
+.tab-content {
+    opacity: 0;
+    transform: translateY(10px);
+    transition: opacity 0.3s ease, transform 0.3s ease;
+    pointer-events: none;
+}
+
+.tab-content.active {
+    opacity: 1;
+    transform: translateY(0);
+    pointer-events: auto;
+}
+
+.modal {
+    opacity: 0;
+    transition: opacity 0.2s ease;
+}
+
+.modal.active {
+    opacity: 1;
+}
+
+.modal-content {
+    transform: scale(0.95) translateY(-20px);
+    transition: transform 0.3s ease;
+}
+
+.modal.active .modal-content {
+    transform: scale(1) translateY(0);
+}
+
+.notification {
+    transform: translateX(100%);
+    opacity: 0;
+    animation: slide-in 0.3s ease forwards;
+}
+
+@keyframes slide-in {
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+.notification.fade-out {
+    animation: slide-out 0.3s ease forwards;
+}
+
+@keyframes slide-out {
+    to {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+}
+
+/* Card hover lift effect */
+.archetype-card,
+.build-card,
+.recommendation-card,
+.tier-card {
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.archetype-card:hover,
+.build-card:hover,
+.recommendation-card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow);
+}
+
+/* Button transitions */
+.btn {
+    transition: background 0.2s ease, transform 0.1s ease, box-shadow 0.2s ease;
+}
+
+.btn:active {
+    transform: scale(0.98);
+}
+
+.option-btn {
+    transition: all 0.2s ease;
+}
+
+/* ========================================
+   KEYBOARD NAVIGATION INDICATORS
+   ======================================== */
+.option-btn.keyboard-focus {
+    box-shadow: 0 0 0 3px rgba(88, 166, 255, 0.5);
+}
+
+.keyboard-hint {
+    font-size: var(--font-xs);
+    color: var(--text-muted);
+    text-align: center;
+    margin-top: var(--space-md);
+}
+
+.keyboard-hint kbd {
+    display: inline-block;
+    padding: 2px 6px;
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    font-family: monospace;
+    font-size: var(--font-xs);
+}
+
+/* ========================================
+   TOOLTIPS
+   ======================================== */
+[data-tooltip] {
+    position: relative;
+}
+
+[data-tooltip]::after {
+    content: attr(data-tooltip);
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%) translateY(-4px);
+    padding: var(--space-xs) var(--space-sm);
+    background: var(--bg-primary);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius);
+    font-size: var(--font-xs);
+    color: var(--text-primary);
+    white-space: nowrap;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s, transform 0.2s;
+    z-index: 1000;
+}
+
+[data-tooltip]:hover::after {
+    opacity: 1;
+    transform: translateX(-50%) translateY(-8px);
+}
+
+/* ========================================
+   RESPONSIVE ADJUSTMENTS FOR NEW FEATURES
+   ======================================== */
+@media (max-width: 768px) {
+    .search-filter-bar {
+        flex-direction: column;
+    }
+
+    .search-input-wrapper {
+        width: 100%;
+    }
+
+    .filter-buttons {
+        width: 100%;
+        overflow-x: auto;
+        padding-bottom: var(--space-xs);
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .price-status {
+        font-size: var(--font-xs);
+    }
+
+    .keyboard-hint {
+        display: none;
+    }
+}
+
+/* ========================================
+   OPTION NUMBER BADGES
+   ======================================== */
+.option-number {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.5em;
+    height: 1.5em;
+    background: var(--bg-hover);
+    border-radius: 4px;
+    font-size: var(--font-xs);
+    color: var(--text-muted);
+    margin-right: var(--space-sm);
+    flex-shrink: 0;
+}
+
+.option-btn.selected .option-number {
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+}
+
+.option-btn.keyboard-focus .option-number {
+    background: var(--accent-primary);
+    color: white;
+}
+
+/* Hide option numbers on touch devices */
+@media (hover: none) and (pointer: coarse) {
+    .option-number {
+        display: none;
+    }
+}
+
+/* ========================================
+   PRICE CHANGE INDICATORS
+   ======================================== */
+.price-up {
+    color: var(--accent-secondary);
+    font-size: var(--font-xs);
+    margin-left: var(--space-xs);
+}
+
+.price-down {
+    color: var(--accent-danger);
+    font-size: var(--font-xs);
+    margin-left: var(--space-xs);
+}
+
+.price-coverage {
+    font-size: var(--font-xs);
+    color: var(--text-muted);
+    margin-left: var(--space-sm);
+}
+
+/* ========================================
+   EXTERNAL LINK BUTTON
+   ======================================== */
+.external-link {
+    margin: var(--space-md) 0;
+}
+
+.external-link a {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-xs);
+}

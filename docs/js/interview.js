@@ -8,8 +8,12 @@ const Interview = {
         active: false,
         currentQuestion: 0,
         responses: {},
-        recommendations: null
+        recommendations: null,
+        focusedOption: -1
     },
+
+    // Keyboard handler reference (for cleanup)
+    keyboardHandler: null,
 
     /**
      * Start a new interview
@@ -19,9 +23,112 @@ const Interview = {
             active: true,
             currentQuestion: 0,
             responses: {},
-            recommendations: null
+            recommendations: null,
+            focusedOption: -1
         };
+        this.setupKeyboardNavigation();
         this.render();
+    },
+
+    /**
+     * Set up keyboard navigation
+     */
+    setupKeyboardNavigation() {
+        // Remove existing handler if any
+        if (this.keyboardHandler) {
+            document.removeEventListener('keydown', this.keyboardHandler);
+        }
+
+        this.keyboardHandler = (e) => {
+            if (!this.state.active) return;
+
+            const question = this.getCurrentQuestion();
+            if (!question) return;
+
+            const options = question.options || [];
+            const optionCount = options.length;
+
+            switch (e.key) {
+                case 'ArrowDown':
+                case 'ArrowRight':
+                    e.preventDefault();
+                    this.state.focusedOption = (this.state.focusedOption + 1) % optionCount;
+                    this.updateFocusedOption();
+                    break;
+
+                case 'ArrowUp':
+                case 'ArrowLeft':
+                    e.preventDefault();
+                    this.state.focusedOption = this.state.focusedOption <= 0
+                        ? optionCount - 1
+                        : this.state.focusedOption - 1;
+                    this.updateFocusedOption();
+                    break;
+
+                case 'Enter':
+                case ' ':
+                    if (this.state.focusedOption >= 0 && this.state.focusedOption < optionCount) {
+                        e.preventDefault();
+                        this.setResponse(options[this.state.focusedOption].value);
+                        // Auto-advance for single-select questions
+                        if (question.type === 'select' && this.hasValidResponse()) {
+                            setTimeout(() => this.next(), 150);
+                        }
+                    } else if (e.key === 'Enter' && this.hasValidResponse()) {
+                        e.preventDefault();
+                        this.next();
+                    }
+                    break;
+
+                case 'Backspace':
+                    if (this.state.currentQuestion > 0) {
+                        e.preventDefault();
+                        this.previous();
+                    }
+                    break;
+
+                case '1': case '2': case '3': case '4': case '5':
+                case '6': case '7': case '8': case '9':
+                    const index = parseInt(e.key) - 1;
+                    if (index < optionCount) {
+                        e.preventDefault();
+                        this.setResponse(options[index].value);
+                        if (question.type === 'select' && this.hasValidResponse()) {
+                            setTimeout(() => this.next(), 150);
+                        }
+                    }
+                    break;
+            }
+        };
+
+        document.addEventListener('keydown', this.keyboardHandler);
+    },
+
+    /**
+     * Update visual focus indicator
+     */
+    updateFocusedOption() {
+        // Remove existing focus
+        document.querySelectorAll('.option-btn.keyboard-focus').forEach(btn => {
+            btn.classList.remove('keyboard-focus');
+        });
+
+        // Add focus to current option
+        const buttons = document.querySelectorAll('.option-btn');
+        if (this.state.focusedOption >= 0 && buttons[this.state.focusedOption]) {
+            buttons[this.state.focusedOption].classList.add('keyboard-focus');
+            buttons[this.state.focusedOption].scrollIntoView({ block: 'nearest' });
+        }
+    },
+
+    /**
+     * Clean up keyboard navigation
+     */
+    cleanupKeyboardNavigation() {
+        if (this.keyboardHandler) {
+            document.removeEventListener('keydown', this.keyboardHandler);
+            this.keyboardHandler = null;
+        }
     },
 
     /**
@@ -90,6 +197,7 @@ const Interview = {
 
         if (this.state.currentQuestion < Data.INTERVIEW_QUESTIONS.length - 1) {
             this.state.currentQuestion++;
+            this.state.focusedOption = -1; // Reset focus for new question
             this.render();
         } else {
             this.finish();
@@ -102,6 +210,7 @@ const Interview = {
     previous() {
         if (this.state.currentQuestion > 0) {
             this.state.currentQuestion--;
+            this.state.focusedOption = -1; // Reset focus for new question
             this.render();
         }
     },
@@ -112,6 +221,7 @@ const Interview = {
     finish() {
         this.state.recommendations = Recommendations.getRecommendations(this.state.responses);
         this.state.active = false;
+        this.cleanupKeyboardNavigation();
 
         // Save to history
         Storage.saveInterviewResult({
@@ -130,11 +240,13 @@ const Interview = {
      * Reset interview
      */
     reset() {
+        this.cleanupKeyboardNavigation();
         this.state = {
             active: false,
             currentQuestion: 0,
             responses: {},
-            recommendations: null
+            recommendations: null,
+            focusedOption: -1
         };
         this.render();
     },
@@ -199,17 +311,21 @@ const Interview = {
         let optionsHtml = '';
 
         if (question.type === 'select') {
-            optionsHtml = question.options.map(opt => `
-                <button class="option-btn ${response === opt.value ? 'selected' : ''}"
-                        onclick="Interview.setResponse('${opt.value}')">
+            optionsHtml = question.options.map((opt, index) => `
+                <button class="option-btn ${response === opt.value ? 'selected' : ''} ${this.state.focusedOption === index ? 'keyboard-focus' : ''}"
+                        onclick="Interview.setResponse('${opt.value}')"
+                        data-index="${index}">
+                    <span class="option-number">${index + 1}</span>
                     ${this.escapeHtml(opt.label)}
                 </button>
             `).join('');
         } else if (question.type === 'multiselect') {
             const selected = response || [];
-            optionsHtml = question.options.map(opt => `
-                <button class="option-btn ${selected.includes(opt.value) ? 'selected' : ''}"
-                        onclick="Interview.setResponse('${opt.value}')">
+            optionsHtml = question.options.map((opt, index) => `
+                <button class="option-btn ${selected.includes(opt.value) ? 'selected' : ''} ${this.state.focusedOption === index ? 'keyboard-focus' : ''}"
+                        onclick="Interview.setResponse('${opt.value}')"
+                        data-index="${index}">
+                    <span class="option-number">${index + 1}</span>
                     ${this.escapeHtml(opt.label)}
                 </button>
             `).join('');
@@ -258,6 +374,12 @@ const Interview = {
                 <button class="btn btn-text" onclick="Interview.reset()">
                     Cancel
                 </button>
+
+                <div class="keyboard-hint">
+                    <kbd>↑</kbd><kbd>↓</kbd> navigate &nbsp;
+                    <kbd>Enter</kbd> select &nbsp;
+                    <kbd>1</kbd>-<kbd>9</kbd> quick select
+                </div>
             </div>
         `;
     },

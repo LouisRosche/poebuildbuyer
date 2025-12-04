@@ -8,6 +8,10 @@ const App = {
     currentTab: 'interview',
     currentArchetype: null,
     currencyRates: null,
+    priceStatus: 'fresh', // 'fresh', 'stale', 'error'
+    lastPriceUpdate: null,
+    searchQuery: '',
+    activeFilters: [],
 
     /**
      * Initialize the application
@@ -42,10 +46,52 @@ const App = {
     async loadCurrencyRates() {
         try {
             this.currencyRates = await Prices.getCurrencyRates();
+            this.priceStatus = 'fresh';
+            this.lastPriceUpdate = new Date();
         } catch (error) {
             console.error('Failed to load currency rates:', error);
             this.currencyRates = { divine: 200, exalted: 20, chaos: 1 };
+            this.priceStatus = 'error';
         }
+        this.updatePriceStatusUI();
+    },
+
+    /**
+     * Update price status indicator in UI
+     */
+    updatePriceStatusUI() {
+        const container = document.getElementById('price-status');
+        if (!container) return;
+
+        const statusText = this.priceStatus === 'fresh'
+            ? 'Prices updated'
+            : this.priceStatus === 'stale'
+                ? 'Prices may be outdated'
+                : 'Using cached prices';
+
+        const timeText = this.lastPriceUpdate
+            ? this.formatTimeAgo(this.lastPriceUpdate)
+            : '';
+
+        container.innerHTML = `
+            <span class="price-status-dot ${this.priceStatus}"></span>
+            <span>${statusText}${timeText ? ` (${timeText})` : ''}</span>
+            <button class="refresh-btn" onclick="App.refreshPrices()" title="Refresh prices">
+                ↻
+            </button>
+        `;
+    },
+
+    /**
+     * Format time ago
+     */
+    formatTimeAgo(date) {
+        const seconds = Math.floor((new Date() - date) / 1000);
+        if (seconds < 60) return 'just now';
+        const minutes = Math.floor(seconds / 60);
+        if (minutes < 60) return `${minutes}m ago`;
+        const hours = Math.floor(minutes / 60);
+        return `${hours}h ago`;
     },
 
     /**
@@ -135,13 +181,143 @@ const App = {
     },
 
     /**
+     * Get unique classes from archetypes
+     */
+    getUniqueClasses() {
+        return [...new Set(Data.ARCHETYPES.map(a => a.class_name))].sort();
+    },
+
+    /**
+     * Filter archetypes based on search and filters
+     */
+    getFilteredArchetypes() {
+        let archetypes = Data.ARCHETYPES;
+
+        // Apply search filter
+        if (this.searchQuery) {
+            const query = this.searchQuery.toLowerCase();
+            archetypes = archetypes.filter(a =>
+                a.name.toLowerCase().includes(query) ||
+                a.class_name.toLowerCase().includes(query) ||
+                a.description.toLowerCase().includes(query) ||
+                a.tags.some(t => t.toLowerCase().includes(query))
+            );
+        }
+
+        // Apply class filters
+        if (this.activeFilters.length > 0) {
+            archetypes = archetypes.filter(a =>
+                this.activeFilters.includes(a.class_name)
+            );
+        }
+
+        return archetypes;
+    },
+
+    /**
+     * Handle search input
+     */
+    handleSearch(value) {
+        this.searchQuery = value;
+        this.renderArchetypesGrid();
+    },
+
+    /**
+     * Toggle class filter
+     */
+    toggleFilter(className) {
+        const index = this.activeFilters.indexOf(className);
+        if (index >= 0) {
+            this.activeFilters.splice(index, 1);
+        } else {
+            this.activeFilters.push(className);
+        }
+        this.renderArchetypes();
+    },
+
+    /**
+     * Clear all filters
+     */
+    clearFilters() {
+        this.searchQuery = '';
+        this.activeFilters = [];
+        this.renderArchetypes();
+    },
+
+    /**
      * Render archetypes grid
      */
     renderArchetypes() {
         const container = document.getElementById('archetypes-grid');
         if (!container) return;
 
-        const archetypes = Data.ARCHETYPES;
+        // Render search/filter bar
+        const classes = this.getUniqueClasses();
+        const headerHtml = `
+            <div class="search-filter-bar">
+                <div class="search-input-wrapper">
+                    <span class="search-icon">🔍</span>
+                    <input type="text"
+                           class="search-input"
+                           placeholder="Search builds..."
+                           value="${this.escapeHtml(this.searchQuery)}"
+                           oninput="App.handleSearch(this.value)">
+                </div>
+                <div class="filter-buttons">
+                    ${classes.map(c => `
+                        <button class="filter-btn ${this.activeFilters.includes(c) ? 'active' : ''}"
+                                onclick="App.toggleFilter('${this.escapeHtml(c)}')">
+                            ${this.escapeHtml(c)}
+                        </button>
+                    `).join('')}
+                    ${(this.searchQuery || this.activeFilters.length > 0) ? `
+                        <button class="clear-filters" onclick="App.clearFilters()">Clear all</button>
+                    ` : ''}
+                </div>
+            </div>
+        `;
+
+        // Get wrapper or create it
+        let wrapper = document.getElementById('archetypes-wrapper');
+        if (!wrapper) {
+            container.parentElement.insertBefore(
+                Object.assign(document.createElement('div'), {
+                    id: 'archetypes-wrapper',
+                    innerHTML: headerHtml
+                }),
+                container
+            );
+            wrapper = document.getElementById('archetypes-wrapper');
+        } else {
+            // Update just the filter bar
+            const existingBar = wrapper.querySelector('.search-filter-bar');
+            if (existingBar) {
+                existingBar.outerHTML = headerHtml;
+            }
+        }
+
+        this.renderArchetypesGrid();
+    },
+
+    /**
+     * Render just the archetypes grid (without search bar)
+     */
+    renderArchetypesGrid() {
+        const container = document.getElementById('archetypes-grid');
+        if (!container) return;
+
+        const archetypes = this.getFilteredArchetypes();
+
+        if (archetypes.length === 0) {
+            container.innerHTML = `
+                <div class="no-results">
+                    <h3>No builds found</h3>
+                    <p>Try adjusting your search or filters</p>
+                    <button class="btn btn-secondary" onclick="App.clearFilters()">Clear filters</button>
+                </div>
+            `;
+            return;
+        }
 
         container.innerHTML = archetypes.map(arch => `
             <div class="archetype-card" onclick="App.viewArchetype('${arch.id}')">
@@ -191,7 +367,23 @@ const App = {
         const content = document.getElementById('archetype-detail');
         if (!modal || !content) return;
 
-        // Render basic info first
+        // Generate skeleton items for loading state
+        const skeletonItems = Array(5).fill(0).map(() => `
+            <div class="skeleton-item">
+                <div class="skeleton skeleton-name"></div>
+                <div class="skeleton skeleton-price"></div>
+            </div>
+        `).join('');
+
+        const skeletonTier = `
+            <div class="tier-card">
+                <div class="skeleton skeleton-text" style="width: 40%"></div>
+                <div class="skeleton skeleton-text-sm"></div>
+                <div class="tier-items-skeleton">${skeletonItems}</div>
+            </div>
+        `;
+
+        // Render basic info first with skeleton loading for prices
         content.innerHTML = `
             <div class="archetype-header">
                 <h2>${this.escapeHtml(archetype.name)}</h2>
@@ -224,6 +416,14 @@ const App = {
 
             <p class="archetype-description">${this.escapeHtml(archetype.description)}</p>
 
+            ${archetype.guide_url ? `
+                <div class="external-link">
+                    <a href="${this.escapeHtml(archetype.guide_url)}" target="_blank" class="btn btn-secondary">
+                        View Full Guide ↗
+                    </a>
+                </div>
+            ` : ''}
+
             <div class="pros-cons">
                 <div class="pros">
                     <h4>Pros</h4>
@@ -249,9 +449,14 @@ const App = {
 
             <div class="budget-tiers">
                 <h3>Budget Tiers</h3>
-                <div class="tiers-loading">Loading prices...</div>
+                <div id="price-status" class="price-status"></div>
+                <div class="tiers-grid">
+                    ${archetype.tiers.map(() => skeletonTier).join('')}
+                </div>
             </div>
         `;
+
+        this.updatePriceStatusUI();
 
         this.openModal('archetype-modal');
 
@@ -266,20 +471,32 @@ const App = {
         const tiersContainer = document.querySelector('.budget-tiers');
         if (!tiersContainer) return;
 
+        let hasErrors = false;
+
         const tiersHtml = await Promise.all(archetype.tiers.map(async tier => {
             // Get prices for this tier
             let itemsHtml = '';
             let totalCost = 0;
+            let pricesFound = 0;
 
             for (const item of tier.items) {
                 let priceHtml = '';
                 if (item.is_unique) {
-                    const price = await Prices.getPrice(item.item_name, item.slot);
-                    if (price) {
-                        totalCost += price.chaos;
-                        priceHtml = `<span class="item-price">${Prices.formatPrice(price.chaos, this.currencyRates)}</span>`;
-                    } else {
-                        priceHtml = `<span class="item-price unknown">Price N/A</span>`;
+                    try {
+                        const price = await Prices.getPrice(item.item_name, item.slot);
+                        if (price) {
+                            totalCost += price.chaos;
+                            pricesFound++;
+                            const changeHtml = price.change
+                                ? `<span class="${price.change > 0 ? 'price-up' : 'price-down'}">${price.change > 0 ? '+' : ''}${price.change.toFixed(0)}%</span>`
+                                : '';
+                            priceHtml = `<span class="item-price">${Prices.formatPrice(price.chaos, this.currencyRates)} ${changeHtml}</span>`;
+                        } else {
+                            priceHtml = `<span class="item-price price-unavailable">Price N/A</span>`;
+                        }
+                    } catch (error) {
+                        hasErrors = true;
+                        priceHtml = `<span class="item-price error-inline">Failed to load</span>`;
                     }
                 } else {
                     priceHtml = `<span class="item-price rare">Rare - varies</span>`;
@@ -293,6 +510,9 @@ const App = {
                     </div>
                 `;
             }
+
+            const uniqueCount = tier.items.filter(i => i.is_unique).length;
+            const coveragePercent = uniqueCount > 0 ? Math.round((pricesFound / uniqueCount) * 100) : 100;
 
             return `
                 <div class="tier-card">
@@ -309,6 +529,7 @@ const App = {
                     <div class="tier-total">
                         <span>Estimated Total:</span>
                         <span class="total-price">${Prices.formatPrice(totalCost, this.currencyRates)}</span>
+                        ${coveragePercent < 100 ? `<span class="price-coverage">(${coveragePercent}% priced)</span>` : ''}
                     </div>
 
                     ${tier.upgrade_notes ? `
@@ -324,12 +545,20 @@ const App = {
             `;
         }));
 
+        if (hasErrors) {
+            this.priceStatus = 'error';
+            this.updatePriceStatusUI();
+        }
+
         tiersContainer.innerHTML = `
             <h3>Budget Tiers</h3>
+            <div id="price-status" class="price-status"></div>
             <div class="tiers-grid">
                 ${tiersHtml.join('')}
             </div>
         `;
+
+        this.updatePriceStatusUI();
     },
 
     /**
@@ -554,17 +783,36 @@ const App = {
      * Refresh prices
      */
     async refreshPrices() {
-        // Clear price cache
-        Storage.set(Storage.KEYS.PRICE_CACHE, { prices: {}, timestamp: 0 });
+        const refreshBtn = document.querySelector('.refresh-btn');
+        if (refreshBtn) {
+            refreshBtn.classList.add('loading');
+        }
 
-        // Reload currency rates
-        await this.loadCurrencyRates();
+        try {
+            // Clear price cache
+            Storage.set(Storage.KEYS.PRICE_CACHE, { prices: {}, timestamp: 0 });
 
-        this.showNotification('Prices refreshed');
+            // Reload currency rates
+            await this.loadCurrencyRates();
 
-        // Re-render current view if showing prices
-        if (this.currentTab === 'builds') {
-            this.renderBuilds();
+            this.showNotification('Prices refreshed');
+
+            // Re-render current view if showing prices
+            if (this.currentTab === 'builds') {
+                this.renderBuilds();
+            }
+
+            // Reload tier prices if archetype modal is open
+            if (this.currentArchetype && document.getElementById('archetype-modal').classList.contains('active')) {
+                await this.loadTierPrices(this.currentArchetype);
+            }
+        } catch (error) {
+            this.priceStatus = 'error';
+            this.showNotification('Failed to refresh prices', 'error');
+        } finally {
+            if (refreshBtn) {
+                refreshBtn.classList.remove('loading');
+            }
         }
     },
 
