@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PoE2 Build Planner & Price Tracker</title>
+    <meta name="description" content="Find your perfect Path of Exile 2 build with our interactive build finder and price tracker.">
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚔️</text></svg>">
+</head>
+<body>
+    <div class="app">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-content">
+                <h1 class="logo">PoE2 Build Planner</h1>
+                <div class="header-actions">
+                    <select id="league-select" class="league-select">
+                        <option value="Standard">Standard</option>
+                        <option value="Dawn">Dawn League</option>
+                    </select>
+                    <button class="btn btn-icon" onclick="App.exportAllData()" title="Export Data">
+                        📤
+                    </button>
+                    <label class="btn btn-icon" title="Import Data">
+                        📥
+                        <input type="file" accept=".json" onchange="App.importData(event)" style="display: none;">
+                    </label>
+                </div>
+            </div>
+        </header>
+
+        <!-- Navigation Tabs -->
+        <nav class="tabs">
+            <button class="tab-btn active" data-tab="interview">Build Finder</button>
+            <button class="tab-btn" data-tab="archetypes">All Builds</button>
+            <button class="tab-btn" data-tab="builds">My Builds</button>
+        </nav>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Interview Tab -->
+            <div id="interview-tab" class="tab-content active">
+                <div id="interview-container">
+                    <!-- Interview content rendered by JS -->
+                </div>
+            </div>
+
+            <!-- Archetypes Tab -->
+            <div id="archetypes-tab" class="tab-content">
+                <div class="archetypes-header">
+                    <h2>Build Archetypes</h2>
+                    <p>Browse all available build templates</p>
+                </div>
+                <div id="archetypes-grid" class="archetypes-grid">
+                    <!-- Archetypes rendered by JS -->
+                </div>
+            </div>
+
+            <!-- Builds Tab -->
+            <div id="builds-tab" class="tab-content">
+                <div class="builds-header">
+                    <h2>My Builds</h2>
+                    <p>Your saved build configurations</p>
+                </div>
+                <div id="builds-list" class="builds-list">
+                    <!-- Builds rendered by JS -->
+                </div>
+            </div>
+        </main>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <p>PoE2 Build Planner - Prices from <a href="https://poe.ninja" target="_blank">poe.ninja</a></p>
+            <p>Not affiliated with Grinding Gear Games</p>
+        </footer>
+    </div>
+
+    <!-- Archetype Detail Modal -->
+    <div id="archetype-modal" class="modal">
+        <div class="modal-content modal-large">
+            <button class="modal-close" onclick="App.closeModal('archetype-modal')">&times;</button>
+            <div id="archetype-detail">
+                <!-- Archetype details rendered by JS -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Build Detail Modal -->
+    <div id="build-modal" class="modal">
+        <div class="modal-content">
+            <button class="modal-close" onclick="App.closeModal('build-modal')">&times;</button>
+            <div id="build-detail">
+                <!-- Build details rendered by JS -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Notifications -->
+    <div id="notifications" class="notifications"></div>
+
+    <!-- Scripts -->
+    <script src="js/storage.js"></script>
+    <script src="js/data.js"></script>
+    <script src="js/prices.js"></script>
+    <script src="js/recommendations.js"></script>
+    <script src="js/interview.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,840 @@
+/**
+ * Data module - embedded archetypes and interview questions
+ * This replaces the backend database for the static version
+ */
+
+const Data = {
+    // Interview questions
+    INTERVIEW_QUESTIONS: [
+        {
+            id: "class",
+            question: "What class are you playing (or want to play)?",
+            type: "select",
+            required: true,
+            options: [
+                { value: "any", label: "I'm flexible / Show me all options" },
+                { value: "witch", label: "Witch" },
+                { value: "sorceress", label: "Sorceress" },
+                { value: "ranger", label: "Ranger" },
+                { value: "mercenary", label: "Mercenary" },
+                { value: "monk", label: "Monk" },
+                { value: "warrior", label: "Warrior" }
+            ],
+            weight: 2.0
+        },
+        {
+            id: "playstyle",
+            question: "What playstyle do you enjoy most?",
+            type: "select",
+            required: true,
+            options: [
+                { value: "any", label: "I enjoy variety / No preference" },
+                { value: "melee", label: "Up close and personal - Melee combat" },
+                { value: "ranged", label: "Keep my distance - Ranged attacks" },
+                { value: "spell", label: "Cast powerful spells" },
+                { value: "minion", label: "Let my minions do the work" },
+                { value: "hybrid", label: "A mix of styles" }
+            ],
+            weight: 2.0
+        },
+        {
+            id: "damage_preference",
+            question: "Do you have a damage type preference?",
+            type: "select",
+            required: false,
+            options: [
+                { value: "any", label: "No preference" },
+                { value: "physical", label: "Physical - Raw brute force" },
+                { value: "fire", label: "Fire - Burn everything" },
+                { value: "cold", label: "Cold - Freeze and shatter" },
+                { value: "lightning", label: "Lightning - Shock and awe" },
+                { value: "chaos", label: "Chaos - Poison and decay" }
+            ],
+            weight: 1.5
+        },
+        {
+            id: "content_focus",
+            question: "What content will you focus on?",
+            type: "multiselect",
+            required: true,
+            options: [
+                { value: "mapping", label: "Fast map clearing" },
+                { value: "bossing", label: "Boss killing" },
+                { value: "both", label: "Balanced - both mapping and bossing" },
+                { value: "league_mechanics", label: "League mechanics (delve, heist, etc.)" }
+            ],
+            weight: 1.5
+        },
+        {
+            id: "budget",
+            question: "What's your approximate budget?",
+            type: "select",
+            required: true,
+            options: [
+                { value: "starter", label: "League start / Very low (< 50 chaos)" },
+                { value: "budget", label: "Budget (50-500 chaos)" },
+                { value: "mid", label: "Mid-tier (500-5000 chaos / few divines)" },
+                { value: "high", label: "High budget (5000+ chaos / 5+ divines)" },
+                { value: "unlimited", label: "Sky's the limit / Min-max everything" }
+            ],
+            weight: 1.0
+        },
+        {
+            id: "experience",
+            question: "What's your experience level with PoE?",
+            type: "select",
+            required: true,
+            options: [
+                { value: "new", label: "New to PoE - Keep it simple" },
+                { value: "casual", label: "Casual - I know the basics" },
+                { value: "intermediate", label: "Intermediate - I understand most mechanics" },
+                { value: "experienced", label: "Experienced - Bring on the complexity" }
+            ],
+            weight: 1.0
+        },
+        {
+            id: "survivability",
+            question: "How important is survivability to you?",
+            type: "select",
+            required: false,
+            options: [
+                { value: "glass_cannon", label: "Glass cannon - Max damage, deaths are fine" },
+                { value: "balanced", label: "Balanced - Some defense, good damage" },
+                { value: "tanky", label: "Tanky - I hate dying, willing to sacrifice damage" },
+                { value: "immortal", label: "Near-immortal - I want to AFK in boss fights" }
+            ],
+            weight: 1.0
+        },
+        {
+            id: "clear_speed",
+            question: "How important is clear speed?",
+            type: "select",
+            required: false,
+            options: [
+                { value: "slow", label: "Slow and steady - I take my time" },
+                { value: "moderate", label: "Moderate - Comfortable pace" },
+                { value: "fast", label: "Fast - Gotta go fast" },
+                { value: "zoom", label: "Zoom zoom - Speed is everything" }
+            ],
+            weight: 0.8
+        },
+        {
+            id: "existing_gear",
+            question: "Do you have any valuable items you want to build around?",
+            type: "text",
+            required: false,
+            placeholder: "e.g., 'Headhunter', 'Mageblood', or leave blank",
+            weight: 0.5
+        },
+        {
+            id: "avoid",
+            question: "Anything you want to avoid?",
+            type: "multiselect",
+            required: false,
+            options: [
+                { value: "piano", label: "Piano builds (many buttons to press)" },
+                { value: "minions", label: "Minion/summon builds" },
+                { value: "dot", label: "Damage over time builds" },
+                { value: "melee", label: "Melee combat" },
+                { value: "channeling", label: "Channeling skills" },
+                { value: "totems", label: "Totem builds" }
+            ],
+            weight: 1.5
+        }
+    ],
+
+    // Budget tier definitions
+    BUDGET_TIERS: {
+        starter: { name: "League Start", min: 0, max: 50, order: 1 },
+        budget: { name: "Budget", min: 50, max: 500, order: 2 },
+        mid: { name: "Mid-Tier", min: 500, max: 5000, order: 3 },
+        high: { name: "High Budget", min: 5000, max: 50000, order: 4 },
+        mirror: { name: "Min-Maxed", min: 50000, max: null, order: 5 }
+    },
+
+    // Experience to complexity mapping
+    EXPERIENCE_COMPLEXITY: {
+        new: 1,
+        casual: 1,
+        intermediate: 2,
+        experienced: 3
+    },
+
+    // Build archetypes with budget tiers
+    ARCHETYPES: [
+        {
+            id: "blackflame-blood-mage",
+            name: "Blackflame Chaos Fire Blood Mage",
+            slug: "blackflame-blood-mage",
+            class_name: "Blood Mage",
+            primary_playstyle: "spell",
+            damage_type: "chaos",
+            tags: ["dot", "chaos", "tanky", "boss-killer", "blood-magic"],
+            mapping_score: 7,
+            bossing_score: 9,
+            league_start_score: 4,
+            complexity: 2,
+            description: "Converts fire damage to chaos via the Blackflame mechanic. Excellent boss damage with strong sustain from blood magic. Scales extremely well with investment.",
+            pros: [
+                "Exceptional single target damage",
+                "Great sustain through life leech",
+                "Chaos damage bypasses enemy resistances",
+                "Very tanky with proper gear"
+            ],
+            cons: [
+                "Expensive to min-max",
+                "Not the fastest mapper",
+                "Requires specific uniques to function"
+            ],
+            playstyle_notes: "Focus on maintaining your damage over time effects on bosses. Use your life pool as a resource - the blood magic mechanic gives you incredible sustain.",
+            leveling_notes: "Level as generic fire spells until you can transition to chaos conversion in maps.",
+            tiers: [
+                {
+                    tier_name: "Budget",
+                    tier_order: 2,
+                    min_budget: 100,
+                    max_budget: 1000,
+                    description: "Entry-level version that can clear yellow maps comfortably.",
+                    upgrade_notes: "Prioritize getting Rathpith Globe and Kaom's Heart next.",
+                    items: [
+                        { slot: "weapon", item_name: "Obliteration", item_type: "Wand", is_unique: true, priority: 1 },
+                        { slot: "offhand", item_name: "Rare Focus", item_type: "Focus", is_unique: false, priority: 2, min_stats: { life: 50, "spell damage": 20 } },
+                        { slot: "body", item_name: "Cloak of Flame", item_type: "Body Armour", is_unique: true, priority: 2 },
+                        { slot: "helmet", item_name: "Goldrim", item_type: "Helmet", is_unique: true, priority: 3 },
+                        { slot: "gloves", item_name: "Rare Gloves", item_type: "Gloves", is_unique: false, priority: 3 },
+                        { slot: "boots", item_name: "Wanderlust", item_type: "Boots", is_unique: true, priority: 3 },
+                        { slot: "amulet", item_name: "Atziri's Foible", item_type: "Amulet", is_unique: true, priority: 2 },
+                        { slot: "ring1", item_name: "Rare Ring", item_type: "Ring", is_unique: false, priority: 3 },
+                        { slot: "belt", item_name: "Darkness Enthroned", item_type: "Belt", is_unique: true, priority: 2 }
+                    ]
+                },
+                {
+                    tier_name: "Mid-Tier",
+                    tier_order: 3,
+                    min_budget: 1000,
+                    max_budget: 10000,
+                    description: "Comfortable red map farming with good boss damage.",
+                    upgrade_notes: "Focus on getting Atziri's Acuity and better jewels.",
+                    items: [
+                        { slot: "weapon", item_name: "Rare Wand", item_type: "Wand", is_unique: false, priority: 1, min_stats: { "+# to Level of all Spell Skill Gems": 2, "spell damage": 80 } },
+                        { slot: "offhand", item_name: "Rathpith Globe", item_type: "Sacred Focus", is_unique: true, priority: 1 },
+                        { slot: "body", item_name: "Kaom's Heart", item_type: "Body Armour", is_unique: true, priority: 1 },
+                        { slot: "helmet", item_name: "Rare Helmet", item_type: "Helmet", is_unique: false, priority: 2, min_stats: { life: 80, resistances: 60 } },
+                        { slot: "gloves", item_name: "Atziri's Acuity", item_type: "Gloves", is_unique: true, priority: 2 },
+                        { slot: "boots", item_name: "Atziri's Step", item_type: "Boots", is_unique: true, priority: 2 },
+                        { slot: "amulet", item_name: "Stone of Lazhwar", item_type: "Amulet", is_unique: true, priority: 2 },
+                        { slot: "ring1", item_name: "Snakepit", item_type: "Ring", is_unique: true, priority: 2 },
+                        { slot: "ring2", item_name: "Rare Ring", item_type: "Ring", is_unique: false, priority: 2 },
+                        { slot: "belt", item_name: "Darkness Enthroned", item_type: "Belt", is_unique: true, priority: 1 },
+                        { slot: "jewel1", item_name: "Undying Hate", item_type: "Jewel", is_unique: true, priority: 1, variant: "Tecrod" },
+                        { slot: "jewel2", item_name: "Heart of the Well", item_type: "Jewel", is_unique: true, priority: 2 }
+                    ]
+                },
+                {
+                    tier_name: "Endgame",
+                    tier_order: 4,
+                    min_budget: 10000,
+                    max_budget: 100000,
+                    description: "Full power version capable of all content including Uber bosses.",
+                    upgrade_notes: "Min-max rare items with double influenced mods.",
+                    items: [
+                        { slot: "weapon", item_name: "Rare Wand", item_type: "Wand", is_unique: false, priority: 1, min_stats: { "+# to Level of all Spell Skill Gems": 3, "spell damage": 120, "chaos damage": 40 } },
+                        { slot: "offhand", item_name: "Rathpith Globe", item_type: "Sacred Focus", is_unique: true, priority: 1 },
+                        { slot: "body", item_name: "Kaom's Heart", item_type: "Body Armour", is_unique: true, priority: 1 },
+                        { slot: "helmet", item_name: "Veil of the Night", item_type: "Helmet", is_unique: true, priority: 2 },
+                        { slot: "gloves", item_name: "Atziri's Acuity", item_type: "Gloves", is_unique: true, priority: 1 },
+                        { slot: "boots", item_name: "Atziri's Step", item_type: "Boots", is_unique: true, priority: 2 },
+                        { slot: "amulet", item_name: "Stone of Lazhwar", item_type: "Amulet", is_unique: true, priority: 2 },
+                        { slot: "ring1", item_name: "Snakepit", item_type: "Ring", is_unique: true, priority: 1 },
+                        { slot: "ring2", item_name: "Kalandra's Touch", item_type: "Ring", is_unique: true, priority: 2 },
+                        { slot: "belt", item_name: "Darkness Enthroned", item_type: "Belt", is_unique: true, priority: 1 },
+                        { slot: "jewel1", item_name: "Undying Hate", item_type: "Jewel", is_unique: true, priority: 1, variant: "Tecrod" },
+                        { slot: "jewel2", item_name: "Heart of the Well", item_type: "Jewel", is_unique: true, priority: 1 },
+                        { slot: "jewel3", item_name: "From Nothing", item_type: "Jewel", is_unique: true, priority: 2 }
+                    ]
+                }
+            ]
+        },
+        {
+            id: "summon-army-necromancer",
+            name: "Summon Army Necromancer",
+            slug: "summon-army-necromancer",
+            class_name: "Necromancer",
+            primary_playstyle: "minion",
+            damage_type: "physical",
+            tags: ["minion", "summoner", "tanky", "league-start", "low-button"],
+            mapping_score: 8,
+            bossing_score: 7,
+            league_start_score: 9,
+            complexity: 1,
+            description: "Classic summoner build using multiple minion types. Very safe playstyle with minions doing all the work. Great for new players.",
+            pros: [
+                "Extremely safe playstyle",
+                "Great league starter",
+                "Low button count - minions do the work",
+                "Good scaling with investment"
+            ],
+            cons: [
+                "Minion AI can be frustrating",
+                "Not the fastest clear speed",
+                "Socket pressure for all minion gems"
+            ],
+            playstyle_notes: "Summon your army and let them do the work. Focus on positioning and buffing your minions. Use convocation to recall minions when needed.",
+            leveling_notes: "Start with Raise Zombie from level 1. Add spectres and skeletons as you progress.",
+            tiers: [
+                {
+                    tier_name: "League Start",
+                    tier_order: 1,
+                    min_budget: 0,
+                    max_budget: 50,
+                    description: "Can be started with zero currency. Self-found viable.",
+                    upgrade_notes: "Get Bones of Ullr and The Baron as first upgrades.",
+                    items: [
+                        { slot: "weapon", item_name: "Rare Sceptre", item_type: "Sceptre", is_unique: false, priority: 2, min_stats: { "minion damage": 30 } },
+                        { slot: "offhand", item_name: "Rare Shield", item_type: "Shield", is_unique: false, priority: 3 },
+                        { slot: "body", item_name: "Rare Body Armour", item_type: "Body Armour", is_unique: false, priority: 2, min_stats: { life: 60 } },
+                        { slot: "helmet", item_name: "Rare Helmet", item_type: "Helmet", is_unique: false, priority: 2 },
+                        { slot: "gloves", item_name: "Rare Gloves", item_type: "Gloves", is_unique: false, priority: 3 },
+                        { slot: "boots", item_name: "Wanderlust", item_type: "Boots", is_unique: true, priority: 3 },
+                        { slot: "amulet", item_name: "Sidhebreath", item_type: "Amulet", is_unique: true, priority: 2 }
+                    ]
+                },
+                {
+                    tier_name: "Budget",
+                    tier_order: 2,
+                    min_budget: 50,
+                    max_budget: 500,
+                    description: "Solid yellow map farmer with room to grow.",
+                    upgrade_notes: "Next priority is Vis Mortis for extra spectre.",
+                    items: [
+                        { slot: "weapon", item_name: "Cerberus Limb", item_type: "Sceptre", is_unique: true, priority: 1 },
+                        { slot: "offhand", item_name: "Advancing Fortress", item_type: "Tower Shield", is_unique: true, priority: 2 },
+                        { slot: "body", item_name: "Tabula Rasa", item_type: "Body Armour", is_unique: true, priority: 1 },
+                        { slot: "helmet", item_name: "The Baron", item_type: "Helmet", is_unique: true, priority: 1 },
+                        { slot: "gloves", item_name: "Grip of the Council", item_type: "Gloves", is_unique: true, priority: 2 },
+                        { slot: "boots", item_name: "Bones of Ullr", item_type: "Boots", is_unique: true, priority: 1 },
+                        { slot: "amulet", item_name: "Sidhebreath", item_type: "Amulet", is_unique: true, priority: 2 },
+                        { slot: "belt", item_name: "Darkness Enthroned", item_type: "Belt", is_unique: true, priority: 2 },
+                        { slot: "jewel1", item_name: "Violent Dead", item_type: "Jewel", is_unique: true, priority: 1 }
+                    ]
+                },
+                {
+                    tier_name: "Mid-Tier",
+                    tier_order: 3,
+                    min_budget: 500,
+                    max_budget: 5000,
+                    description: "Comfortable in all content with strong minion army.",
+                    upgrade_notes: "Focus on getting better rare gear and cluster jewels.",
+                    items: [
+                        { slot: "weapon", item_name: "Cerberus Limb", item_type: "Sceptre", is_unique: true, priority: 1 },
+                        { slot: "offhand", item_name: "Advancing Fortress", item_type: "Tower Shield", is_unique: true, priority: 2 },
+                        { slot: "body", item_name: "Vis Mortis", item_type: "Body Armour", is_unique: true, priority: 1 },
+                        { slot: "helmet", item_name: "The Baron", item_type: "Helmet", is_unique: true, priority: 1 },
+                        { slot: "gloves", item_name: "Grip of the Council", item_type: "Gloves", is_unique: true, priority: 1 },
+                        { slot: "boots", item_name: "Bones of Ullr", item_type: "Boots", is_unique: true, priority: 1 },
+                        { slot: "amulet", item_name: "Astramentis", item_type: "Amulet", is_unique: true, priority: 1 },
+                        { slot: "ring1", item_name: "Rare Ring", item_type: "Ring", is_unique: false, priority: 2, min_stats: { strength: 40, life: 50 } },
+                        { slot: "belt", item_name: "Darkness Enthroned", item_type: "Belt", is_unique: true, priority: 1 },
+                        { slot: "jewel1", item_name: "Violent Dead", item_type: "Jewel", is_unique: true, priority: 1 },
+                        { slot: "jewel2", item_name: "Anatomical Knowledge", item_type: "Jewel", is_unique: true, priority: 2 }
+                    ]
+                }
+            ]
+        },
+        {
+            id: "lightning-arrow-deadeye",
+            name: "Lightning Arrow Deadeye",
+            slug: "lightning-arrow-deadeye",
+            class_name: "Ranger",
+            primary_playstyle: "ranged",
+            damage_type: "lightning",
+            tags: ["bow", "fast-mapper", "speed", "projectile", "screen-clear"],
+            mapping_score: 10,
+            bossing_score: 5,
+            league_start_score: 6,
+            complexity: 2,
+            description: "Extremely fast map clearer using Lightning Arrow. Excels at zooming through maps but requires investment for boss damage.",
+            pros: [
+                "Top tier clear speed",
+                "Satisfying screen-wide explosions",
+                "Great for farming currency",
+                "Very mobile playstyle"
+            ],
+            cons: [
+                "Mediocre single target without investment",
+                "Somewhat squishy",
+                "Requires good positioning"
+            ],
+            playstyle_notes: "Zoom through maps firing arrows. Use movement skills liberally. Swap to single target setup for bosses if needed.",
+            leveling_notes: "Level with caustic arrow or rain of arrows until you get proper lightning arrow scaling.",
+            tiers: [
+                {
+                    tier_name: "Budget",
+                    tier_order: 2,
+                    min_budget: 100,
+                    max_budget: 1000,
+                    description: "Functional mapper for yellow/early red maps.",
+                    upgrade_notes: "Priority is getting a good bow and Hyrri's Ire.",
+                    items: [
+                        { slot: "weapon", item_name: "Rare Bow", item_type: "Bow", is_unique: false, priority: 1, min_stats: { "physical damage": 200, "attack speed": 1.4 } },
+                        { slot: "body", item_name: "Queen of the Forest", item_type: "Body Armour", is_unique: true, priority: 2 },
+                        { slot: "helmet", item_name: "Rat's Nest", item_type: "Helmet", is_unique: true, priority: 2 },
+                        { slot: "gloves", item_name: "Shadows and Dust", item_type: "Gloves", is_unique: true, priority: 2 },
+                        { slot: "boots", item_name: "Seven-League Step", item_type: "Boots", is_unique: true, priority: 2 },
+                        { slot: "amulet", item_name: "Ngamahu's Sign", item_type: "Amulet", is_unique: true, priority: 3 },
+                        { slot: "ring1", item_name: "Call of the Brotherhood", item_type: "Ring", is_unique: true, priority: 1 }
+                    ]
+                },
+                {
+                    tier_name: "Mid-Tier",
+                    tier_order: 3,
+                    min_budget: 1000,
+                    max_budget: 10000,
+                    description: "Fast and comfortable in all maps.",
+                    upgrade_notes: "Get a Headhunter or Mageblood for ultimate speed.",
+                    items: [
+                        { slot: "weapon", item_name: "Rare Bow", item_type: "Bow", is_unique: false, priority: 1, min_stats: { "physical damage": 400, "critical strike chance": 7 } },
+                        { slot: "body", item_name: "Queen of the Forest", item_type: "Body Armour", is_unique: true, priority: 1 },
+                        { slot: "helmet", item_name: "Rat's Nest", item_type: "Helmet", is_unique: true, priority: 1 },
+                        { slot: "gloves", item_name: "Shadows and Dust", item_type: "Gloves", is_unique: true, priority: 2 },
+                        { slot: "boots", item_name: "Seven-League Step", item_type: "Boots", is_unique: true, priority: 2 },
+                        { slot: "amulet", item_name: "Xoph's Blood", item_type: "Amulet", is_unique: true, priority: 1 },
+                        { slot: "ring1", item_name: "Call of the Brotherhood", item_type: "Ring", is_unique: true, priority: 1 },
+                        { slot: "ring2", item_name: "Call of the Brotherhood", item_type: "Ring", is_unique: true, priority: 1 },
+                        { slot: "belt", item_name: "Ryslatha's Coil", item_type: "Belt", is_unique: true, priority: 1 },
+                        { slot: "jewel1", item_name: "Grand Spectrum", item_type: "Jewel", is_unique: true, priority: 2 }
+                    ]
+                },
+                {
+                    tier_name: "Endgame",
+                    tier_order: 4,
+                    min_budget: 10000,
+                    max_budget: null,
+                    description: "Maximum zoom. Headhunter-powered mapping machine.",
+                    upgrade_notes: "Mirror-tier bow and double-influenced gear.",
+                    items: [
+                        { slot: "weapon", item_name: "Rare Bow", item_type: "Bow", is_unique: false, priority: 1, min_stats: { "physical damage": 600, "critical strike chance": 9, "attack speed": 1.6 } },
+                        { slot: "body", item_name: "Queen of the Forest", item_type: "Body Armour", is_unique: true, priority: 1 },
+                        { slot: "helmet", item_name: "Rare Helmet", item_type: "Helmet", is_unique: false, priority: 1, min_stats: { life: 100, "critical strike multiplier": 30 } },
+                        { slot: "gloves", item_name: "Rare Gloves", item_type: "Gloves", is_unique: false, priority: 1, min_stats: { "attack speed": 12, accuracy: 300 } },
+                        { slot: "boots", item_name: "Rare Boots", item_type: "Boots", is_unique: false, priority: 1, min_stats: { "movement speed": 35, life: 80 } },
+                        { slot: "amulet", item_name: "Xoph's Blood", item_type: "Amulet", is_unique: true, priority: 1 },
+                        { slot: "ring1", item_name: "Call of the Brotherhood", item_type: "Ring", is_unique: true, priority: 1 },
+                        { slot: "ring2", item_name: "Call of the Brotherhood", item_type: "Ring", is_unique: true, priority: 1 },
+                        { slot: "belt", item_name: "Headhunter", item_type: "Belt", is_unique: true, priority: 1 },
+                        { slot: "jewel1", item_name: "Grand Spectrum", item_type: "Jewel", is_unique: true, priority: 1 },
+                        { slot: "jewel2", item_name: "Grand Spectrum", item_type: "Jewel", is_unique: true, priority: 1 }
+                    ]
+                }
+            ]
+        },
+        {
+            id: "cyclone-slayer",
+            name: "Cyclone Slayer",
+            slug: "cyclone-slayer",
+            class_name: "Slayer",
+            primary_playstyle: "melee",
+            damage_type: "physical",
+            tags: ["melee", "channeling", "leech", "tanky", "boss-killer", "league-start"],
+            mapping_score: 7,
+            bossing_score: 8,
+            league_start_score: 8,
+            complexity: 1,
+            description: "Spin to win! Classic cyclone build with incredible life leech and sustain. Very tanky and satisfying playstyle.",
+            pros: [
+                "Extremely tanky with overleech",
+                "Great league starter",
+                "Simple one-button gameplay",
+                "Good at all content"
+            ],
+            cons: [
+                "Melee range can be dangerous",
+                "Clear speed is good but not top tier",
+                "Can feel slow early"
+            ],
+            playstyle_notes: "Hold down cyclone and spin through everything. The slayer leech makes you very hard to kill. Focus on keeping flasks up.",
+            leveling_notes: "Can use cyclone from act 1. Very smooth leveling experience.",
+            tiers: [
+                {
+                    tier_name: "League Start",
+                    tier_order: 1,
+                    min_budget: 0,
+                    max_budget: 50,
+                    description: "Self-found viable. Works with any two-handed weapon.",
+                    upgrade_notes: "Get Belly of the Beast and a better weapon.",
+                    items: [
+                        { slot: "weapon", item_name: "Rare Two-Handed Sword", item_type: "Sword", is_unique: false, priority: 1, min_stats: { "physical damage": 300 } },
+                        { slot: "body", item_name: "Rare Body Armour", item_type: "Body Armour", is_unique: false, priority: 2, min_stats: { life: 80 } },
+                        { slot: "helmet", item_name: "Rare Helmet", item_type: "Helmet", is_unique: false, priority: 3 },
+                        { slot: "gloves", item_name: "Rare Gloves", item_type: "Gloves", is_unique: false, priority: 3 },
+                        { slot: "boots", item_name: "Rare Boots", item_type: "Boots", is_unique: false, priority: 2, min_stats: { "movement speed": 25 } },
+                        { slot: "amulet", item_name: "Carnage Heart", item_type: "Amulet", is_unique: true, priority: 2 }
+                    ]
+                },
+                {
+                    tier_name: "Budget",
+                    tier_order: 2,
+                    min_budget: 50,
+                    max_budget: 500,
+                    description: "Comfortable mapping and can do most bosses.",
+                    upgrade_notes: "Priority is Starkonja's Head and better rings.",
+                    items: [
+                        { slot: "weapon", item_name: "Rare Two-Handed Sword", item_type: "Sword", is_unique: false, priority: 1, min_stats: { "physical damage": 450, "attack speed": 1.6 } },
+                        { slot: "body", item_name: "Belly of the Beast", item_type: "Body Armour", is_unique: true, priority: 1 },
+                        { slot: "helmet", item_name: "Starkonja's Head", item_type: "Helmet", is_unique: true, priority: 2 },
+                        { slot: "gloves", item_name: "Maligaro's Virtuosity", item_type: "Gloves", is_unique: true, priority: 2 },
+                        { slot: "boots", item_name: "Kaom's Roots", item_type: "Boots", is_unique: true, priority: 1 },
+                        { slot: "amulet", item_name: "Carnage Heart", item_type: "Amulet", is_unique: true, priority: 1 },
+                        { slot: "ring1", item_name: "Le Heup of All", item_type: "Ring", is_unique: true, priority: 3 },
+                        { slot: "ring2", item_name: "Thief's Torment", item_type: "Ring", is_unique: true, priority: 2 },
+                        { slot: "jewel1", item_name: "Conqueror's Efficiency", item_type: "Jewel", is_unique: true, priority: 2 }
+                    ]
+                },
+                {
+                    tier_name: "Mid-Tier",
+                    tier_order: 3,
+                    min_budget: 500,
+                    max_budget: 10000,
+                    description: "Can do all content comfortably including endgame bosses.",
+                    upgrade_notes: "Look for Headhunter for mapping or focus on rare influenced gear.",
+                    items: [
+                        { slot: "weapon", item_name: "Rare Two-Handed Sword", item_type: "Sword", is_unique: false, priority: 1, min_stats: { "physical damage": 600, "critical strike chance": 7 } },
+                        { slot: "body", item_name: "Belly of the Beast", item_type: "Body Armour", is_unique: true, priority: 1 },
+                        { slot: "helmet", item_name: "Starkonja's Head", item_type: "Helmet", is_unique: true, priority: 1 },
+                        { slot: "gloves", item_name: "Rare Gloves", item_type: "Gloves", is_unique: false, priority: 1, min_stats: { "attack speed": 10, life: 70, accuracy: 200 } },
+                        { slot: "boots", item_name: "Kaom's Roots", item_type: "Boots", is_unique: true, priority: 1 },
+                        { slot: "amulet", item_name: "Carnage Heart", item_type: "Amulet", is_unique: true, priority: 1 },
+                        { slot: "ring1", item_name: "Mark of the Elder", item_type: "Ring", is_unique: true, priority: 1 },
+                        { slot: "ring2", item_name: "Mark of the Shaper", item_type: "Ring", is_unique: true, priority: 1 },
+                        { slot: "belt", item_name: "Ryslatha's Coil", item_type: "Belt", is_unique: true, priority: 1 },
+                        { slot: "jewel1", item_name: "Conqueror's Efficiency", item_type: "Jewel", is_unique: true, priority: 1 },
+                        { slot: "jewel2", item_name: "Conqueror's Potency", item_type: "Jewel", is_unique: true, priority: 2 }
+                    ]
+                }
+            ]
+        },
+        {
+            id: "ice-nova-hierophant",
+            name: "Ice Nova Hierophant",
+            slug: "ice-nova-hierophant",
+            class_name: "Witch",
+            primary_playstyle: "spell",
+            damage_type: "cold",
+            tags: ["spell", "cold", "freeze", "fast-mapper", "coc"],
+            mapping_score: 9,
+            bossing_score: 7,
+            league_start_score: 3,
+            complexity: 3,
+            description: "Cast on Crit Ice Nova build. Freezes everything on screen with satisfying shatters. Requires specific gear to function.",
+            pros: [
+                "Excellent clear with screen-wide freezes",
+                "Very safe due to freezing enemies",
+                "Satisfying shatter sounds",
+                "Great damage scaling"
+            ],
+            cons: [
+                "Expensive to start",
+                "Complex mechanics to understand",
+                "Requires specific unique combinations"
+            ],
+            playstyle_notes: "Use cyclone to trigger your spells automatically. Position yourself to hit maximum enemies. The freezing provides excellent defense.",
+            leveling_notes: "Level as self-cast freezing pulse or arc. Transition to CoC once you have the required gear and attack speed.",
+            tiers: [
+                {
+                    tier_name: "Entry",
+                    tier_order: 2,
+                    min_budget: 500,
+                    max_budget: 2000,
+                    description: "Minimum viable CoC setup. Can clear maps but needs upgrades.",
+                    upgrade_notes: "Get Cospri's Malice and better crit gear.",
+                    items: [
+                        { slot: "weapon", item_name: "Rare Sword", item_type: "Sword", is_unique: false, priority: 1, min_stats: { "critical strike chance": 8, "attack speed": 1.8 } },
+                        { slot: "offhand", item_name: "Lycosidae", item_type: "Buckler", is_unique: true, priority: 1 },
+                        { slot: "body", item_name: "Carcass Jack", item_type: "Body Armour", is_unique: true, priority: 2 },
+                        { slot: "helmet", item_name: "Rare Helmet", item_type: "Helmet", is_unique: false, priority: 2, min_stats: { "critical strike chance": 1, life: 70 } },
+                        { slot: "gloves", item_name: "Rare Gloves", item_type: "Gloves", is_unique: false, priority: 2, min_stats: { "attack speed": 8, accuracy: 200 } },
+                        { slot: "boots", item_name: "Atziri's Step", item_type: "Boots", is_unique: true, priority: 2 },
+                        { slot: "amulet", item_name: "Ungil's Harmony", item_type: "Amulet", is_unique: true, priority: 1 }
+                    ]
+                },
+                {
+                    tier_name: "Mid-Tier",
+                    tier_order: 3,
+                    min_budget: 2000,
+                    max_budget: 20000,
+                    description: "Smooth gameplay with good damage and survivability.",
+                    upgrade_notes: "Look for Awakened gems and influenced gear.",
+                    items: [
+                        { slot: "weapon", item_name: "Rare Sword", item_type: "Sword", is_unique: false, priority: 1, min_stats: { "critical strike chance": 9, "attack speed": 2.0, "cold damage": 50 } },
+                        { slot: "offhand", item_name: "Rare Shield", item_type: "Shield", is_unique: false, priority: 1, min_stats: { "spell critical strike chance": 80, life: 80 } },
+                        { slot: "body", item_name: "Carcass Jack", item_type: "Body Armour", is_unique: true, priority: 1 },
+                        { slot: "helmet", item_name: "Crown of Eyes", item_type: "Helmet", is_unique: true, priority: 1 },
+                        { slot: "gloves", item_name: "Rare Gloves", item_type: "Gloves", is_unique: false, priority: 1, min_stats: { "attack speed": 12, accuracy: 350, life: 60 } },
+                        { slot: "boots", item_name: "Atziri's Step", item_type: "Boots", is_unique: true, priority: 1 },
+                        { slot: "amulet", item_name: "Ungil's Harmony", item_type: "Amulet", is_unique: true, priority: 1 },
+                        { slot: "ring1", item_name: "Dream Fragments", item_type: "Ring", is_unique: true, priority: 1 },
+                        { slot: "belt", item_name: "Belt of the Deceiver", item_type: "Belt", is_unique: true, priority: 2 }
+                    ]
+                }
+            ]
+        },
+        {
+            id: "explosive-arrow-elementalist",
+            name: "Explosive Arrow Elementalist",
+            slug: "explosive-arrow-elementalist",
+            class_name: "Witch",
+            primary_playstyle: "ranged",
+            damage_type: "fire",
+            tags: ["bow", "fire", "ignite", "dot", "league-start", "boss-killer"],
+            mapping_score: 7,
+            bossing_score: 9,
+            league_start_score: 9,
+            complexity: 2,
+            description: "Stack explosive arrows on enemies for massive ignite damage. Incredible boss damage on a budget. Top tier league starter.",
+            pros: [
+                "Exceptional boss damage",
+                "Very budget friendly",
+                "Great league starter",
+                "Scales well with investment"
+            ],
+            cons: [
+                "Delayed damage playstyle",
+                "Clear speed is okay but not amazing",
+                "Requires understanding of fuse mechanics"
+            ],
+            playstyle_notes: "Stack 20 fuses on enemies then watch them explode. Use ballista totems for bosses to maximize fuse stacking. The ignite lasts long enough to keep moving.",
+            leveling_notes: "Can level with explosive arrow from level 28. Very smooth progression.",
+            tiers: [
+                {
+                    tier_name: "League Start",
+                    tier_order: 1,
+                    min_budget: 0,
+                    max_budget: 50,
+                    description: "Can kill all bosses on basically no budget.",
+                    upgrade_notes: "Get Dyadian Dawn belt and a 6-link.",
+                    items: [
+                        { slot: "weapon", item_name: "Rare Bow", item_type: "Bow", is_unique: false, priority: 1, min_stats: { "attack speed": 1.5 } },
+                        { slot: "body", item_name: "Rare Body Armour", item_type: "Body Armour", is_unique: false, priority: 2, min_stats: { life: 80 } },
+                        { slot: "helmet", item_name: "Rare Helmet", item_type: "Helmet", is_unique: false, priority: 2, min_stats: { life: 60, resistances: 40 } },
+                        { slot: "gloves", item_name: "Rare Gloves", item_type: "Gloves", is_unique: false, priority: 2, min_stats: { "attack speed": 5 } },
+                        { slot: "boots", item_name: "Rare Boots", item_type: "Boots", is_unique: false, priority: 2, min_stats: { "movement speed": 25, life: 50 } },
+                        { slot: "amulet", item_name: "Rare Amulet", item_type: "Amulet", is_unique: false, priority: 2 }
+                    ]
+                },
+                {
+                    tier_name: "Budget",
+                    tier_order: 2,
+                    min_budget: 50,
+                    max_budget: 500,
+                    description: "Comfortable in all content with great boss damage.",
+                    upgrade_notes: "Look for Polaric Devastation and better cluster jewels.",
+                    items: [
+                        { slot: "weapon", item_name: "Rare Bow", item_type: "Bow", is_unique: false, priority: 1, min_stats: { "attack speed": 1.7, "+# to Level of Socketed Bow Gems": 1 } },
+                        { slot: "body", item_name: "Rare Body Armour", item_type: "Body Armour", is_unique: false, priority: 1, min_stats: { life: 100, resistances: 60 } },
+                        { slot: "helmet", item_name: "Rare Helmet", item_type: "Helmet", is_unique: false, priority: 1, min_stats: { life: 80, resistances: 50 } },
+                        { slot: "gloves", item_name: "Rare Gloves", item_type: "Gloves", is_unique: false, priority: 2, min_stats: { "attack speed": 8, life: 60 } },
+                        { slot: "boots", item_name: "Rare Boots", item_type: "Boots", is_unique: false, priority: 1, min_stats: { "movement speed": 30, life: 70 } },
+                        { slot: "amulet", item_name: "Atziri's Foible", item_type: "Amulet", is_unique: true, priority: 1 },
+                        { slot: "belt", item_name: "Dyadian Dawn", item_type: "Belt", is_unique: true, priority: 1 },
+                        { slot: "ring1", item_name: "Rare Ring", item_type: "Ring", is_unique: false, priority: 2, min_stats: { life: 50, resistances: 60 } }
+                    ]
+                },
+                {
+                    tier_name: "Mid-Tier",
+                    tier_order: 3,
+                    min_budget: 500,
+                    max_budget: 10000,
+                    description: "Melts all bosses including Uber versions.",
+                    upgrade_notes: "Focus on getting +gem level bow and influenced gear.",
+                    items: [
+                        { slot: "weapon", item_name: "Rare Bow", item_type: "Bow", is_unique: false, priority: 1, min_stats: { "attack speed": 1.8, "+# to Level of Socketed Bow Gems": 3 } },
+                        { slot: "body", item_name: "Rare Body Armour", item_type: "Body Armour", is_unique: false, priority: 1, min_stats: { life: 120, resistances: 80, "+# to Level of Socketed Gems": 1 } },
+                        { slot: "helmet", item_name: "Rare Helmet", item_type: "Helmet", is_unique: false, priority: 1, min_stats: { life: 100, "burning damage": 20 } },
+                        { slot: "gloves", item_name: "Rare Gloves", item_type: "Gloves", is_unique: false, priority: 1, min_stats: { "attack speed": 10, life: 70, "fire damage over time multiplier": 15 } },
+                        { slot: "boots", item_name: "Rare Boots", item_type: "Boots", is_unique: false, priority: 1, min_stats: { "movement speed": 35, life: 90 } },
+                        { slot: "amulet", item_name: "Atziri's Foible", item_type: "Amulet", is_unique: true, priority: 1 },
+                        { slot: "belt", item_name: "Dyadian Dawn", item_type: "Belt", is_unique: true, priority: 1 },
+                        { slot: "ring1", item_name: "Pyre", item_type: "Ring", is_unique: true, priority: 2 },
+                        { slot: "ring2", item_name: "Rare Ring", item_type: "Ring", is_unique: false, priority: 1, min_stats: { life: 70, "fire damage over time multiplier": 10 } }
+                    ]
+                }
+            ]
+        },
+        {
+            id: "righteous-fire-juggernaut",
+            name: "Righteous Fire Juggernaut",
+            slug: "righteous-fire-juggernaut",
+            class_name: "Warrior",
+            primary_playstyle: "spell",
+            damage_type: "fire",
+            tags: ["dot", "fire", "tanky", "immortal", "low-button", "league-start", "walking-simulator"],
+            mapping_score: 7,
+            bossing_score: 6,
+            league_start_score: 8,
+            complexity: 1,
+            description: "Walk around and burn everything. Extremely tanky with minimal button pressing. Great for relaxed gameplay.",
+            pros: [
+                "Almost unkillable with proper gear",
+                "One button gameplay",
+                "Great for HC",
+                "Relaxing playstyle"
+            ],
+            cons: [
+                "Slower clear than meta builds",
+                "Requires regen/life recovery to sustain",
+                "Boss damage is okay but not spectacular"
+            ],
+            playstyle_notes: "Just walk around. RF damages enemies in an area around you. Use Fire Trap for extra single target. Focus on maintaining life recovery.",
+            leveling_notes: "Level with ground slam or other melee skills. Switch to RF once you have enough life regen in early maps.",
+            tiers: [
+                {
+                    tier_name: "League Start",
+                    tier_order: 1,
+                    min_budget: 0,
+                    max_budget: 50,
+                    description: "Functional RF that can sustain itself.",
+                    upgrade_notes: "Get Rise of the Phoenix and life regen gear.",
+                    items: [
+                        { slot: "weapon", item_name: "Rare Sceptre", item_type: "Sceptre", is_unique: false, priority: 2, min_stats: { "fire damage": 20 } },
+                        { slot: "offhand", item_name: "Rise of the Phoenix", item_type: "Kite Shield", is_unique: true, priority: 1 },
+                        { slot: "body", item_name: "Rare Body Armour", item_type: "Body Armour", is_unique: false, priority: 1, min_stats: { life: 100 } },
+                        { slot: "helmet", item_name: "Rare Helmet", item_type: "Helmet", is_unique: false, priority: 2, min_stats: { life: 80, "fire resistance": 30 } },
+                        { slot: "gloves", item_name: "Rare Gloves", item_type: "Gloves", is_unique: false, priority: 3, min_stats: { life: 60 } },
+                        { slot: "boots", item_name: "Rare Boots", item_type: "Boots", is_unique: false, priority: 2, min_stats: { "movement speed": 25, life: 60 } }
+                    ]
+                },
+                {
+                    tier_name: "Budget",
+                    tier_order: 2,
+                    min_budget: 50,
+                    max_budget: 500,
+                    description: "Very comfortable sustain with good damage.",
+                    upgrade_notes: "Look for Pyre ring and better regen gear.",
+                    items: [
+                        { slot: "weapon", item_name: "Rare Sceptre", item_type: "Sceptre", is_unique: false, priority: 1, min_stats: { "fire damage over time multiplier": 20, "+# to Level of all Fire Spell Skill Gems": 1 } },
+                        { slot: "offhand", item_name: "Rise of the Phoenix", item_type: "Kite Shield", is_unique: true, priority: 1 },
+                        { slot: "body", item_name: "Kaom's Heart", item_type: "Body Armour", is_unique: true, priority: 1 },
+                        { slot: "helmet", item_name: "Rare Helmet", item_type: "Helmet", is_unique: false, priority: 1, min_stats: { life: 100, "burning damage": 25 } },
+                        { slot: "gloves", item_name: "Rare Gloves", item_type: "Gloves", is_unique: false, priority: 2, min_stats: { life: 80, "fire resistance": 30 } },
+                        { slot: "boots", item_name: "Rare Boots", item_type: "Boots", is_unique: false, priority: 1, min_stats: { "movement speed": 30, life: 80 } },
+                        { slot: "amulet", item_name: "Xoph's Blood", item_type: "Amulet", is_unique: true, priority: 2 },
+                        { slot: "ring1", item_name: "Pyre", item_type: "Ring", is_unique: true, priority: 2 }
+                    ]
+                }
+            ]
+        },
+        {
+            id: "tornado-shot-deadeye",
+            name: "Tornado Shot Deadeye",
+            slug: "tornado-shot-deadeye",
+            class_name: "Ranger",
+            primary_playstyle: "ranged",
+            damage_type: "physical",
+            tags: ["bow", "fast-mapper", "projectile", "speed", "expensive"],
+            mapping_score: 10,
+            bossing_score: 6,
+            league_start_score: 2,
+            complexity: 2,
+            description: "The ultimate mapping build. Tornado Shot with good gear covers the entire screen. Requires significant investment.",
+            pros: [
+                "Best-in-class clear speed",
+                "Extremely satisfying gameplay",
+                "Screen-wide coverage",
+                "Scales infinitely with investment"
+            ],
+            cons: [
+                "Very expensive to feel good",
+                "Bad league starter",
+                "Squishy without investment",
+                "Mediocre single target"
+            ],
+            playstyle_notes: "Fire tornado shot and watch everything die. Use additional projectiles and chain/fork for maximum coverage. Requires good positioning.",
+            leveling_notes: "Do NOT league start this. Level as something else and transition once you have 50+ divines.",
+            tiers: [
+                {
+                    tier_name: "Entry",
+                    tier_order: 3,
+                    min_budget: 5000,
+                    max_budget: 20000,
+                    description: "Minimum viable TS. Feels okay but not great.",
+                    upgrade_notes: "Save for Mageblood or Headhunter.",
+                    items: [
+                        { slot: "weapon", item_name: "Rare Bow", item_type: "Bow", is_unique: false, priority: 1, min_stats: { "physical damage": 450, "critical strike chance": 8 } },
+                        { slot: "body", item_name: "Queen of the Forest", item_type: "Body Armour", is_unique: true, priority: 1 },
+                        { slot: "helmet", item_name: "Rare Helmet", item_type: "Helmet", is_unique: false, priority: 1, min_stats: { "tornado shot projectiles": 2 } },
+                        { slot: "gloves", item_name: "Rare Gloves", item_type: "Gloves", is_unique: false, priority: 1, min_stats: { "attack speed": 10, accuracy: 300 } },
+                        { slot: "boots", item_name: "Rare Boots", item_type: "Boots", is_unique: false, priority: 1, min_stats: { "movement speed": 35 } },
+                        { slot: "amulet", item_name: "Xoph's Blood", item_type: "Amulet", is_unique: true, priority: 1 },
+                        { slot: "ring1", item_name: "Rare Ring", item_type: "Ring", is_unique: false, priority: 1, min_stats: { life: 50, "critical strike multiplier": 20 } },
+                        { slot: "belt", item_name: "Ryslatha's Coil", item_type: "Belt", is_unique: true, priority: 1 }
+                    ]
+                },
+                {
+                    tier_name: "Endgame",
+                    tier_order: 4,
+                    min_budget: 20000,
+                    max_budget: null,
+                    description: "Full power TS. Obliterates maps.",
+                    upgrade_notes: "Mirror-tier bow and perfect influenced rares.",
+                    items: [
+                        { slot: "weapon", item_name: "Rare Bow", item_type: "Bow", is_unique: false, priority: 1, min_stats: { "physical damage": 700, "critical strike chance": 10, "attack speed": 1.7 } },
+                        { slot: "body", item_name: "Rare Body Armour", item_type: "Body Armour", is_unique: false, priority: 1, min_stats: { life: 120, "critical strike chance": 1.5, "additional curse": 1 } },
+                        { slot: "helmet", item_name: "Rare Helmet", item_type: "Helmet", is_unique: false, priority: 1, min_stats: { "tornado shot projectiles": 3, life: 80 } },
+                        { slot: "gloves", item_name: "Rare Gloves", item_type: "Gloves", is_unique: false, priority: 1, min_stats: { "attack speed": 14, accuracy: 400, "critical strike multiplier": 25 } },
+                        { slot: "boots", item_name: "Rare Boots", item_type: "Boots", is_unique: false, priority: 1, min_stats: { "movement speed": 35, tailwind: true } },
+                        { slot: "amulet", item_name: "Rare Amulet", item_type: "Amulet", is_unique: false, priority: 1, min_stats: { "+# to Level of all Skill Gems": 1, "critical strike multiplier": 40 } },
+                        { slot: "ring1", item_name: "Rare Ring", item_type: "Ring", is_unique: false, priority: 1, min_stats: { life: 60, "critical strike multiplier": 30, accuracy: 200 } },
+                        { slot: "ring2", item_name: "Rare Ring", item_type: "Ring", is_unique: false, priority: 1, min_stats: { life: 60, "critical strike multiplier": 30 } },
+                        { slot: "belt", item_name: "Headhunter", item_type: "Belt", is_unique: true, priority: 1 }
+                    ]
+                }
+            ]
+        }
+    ],
+
+    // Helper methods
+    getArchetype(id) {
+        return this.ARCHETYPES.find(a => a.id === id || a.slug === id);
+    },
+
+    getArchetypesByClass(className) {
+        if (!className || className === 'any') return this.ARCHETYPES;
+        const classMap = {
+            witch: ['Witch', 'Necromancer', 'Blood Mage'],
+            sorceress: ['Sorceress'],
+            ranger: ['Ranger', 'Deadeye', 'Pathfinder'],
+            mercenary: ['Mercenary'],
+            monk: ['Monk'],
+            warrior: ['Warrior', 'Slayer', 'Juggernaut']
+        };
+        const validClasses = classMap[className.toLowerCase()] || [className];
+        return this.ARCHETYPES.filter(a => validClasses.includes(a.class_name));
+    },
+
+    getArchetypesByPlaystyle(playstyle) {
+        if (!playstyle || playstyle === 'any') return this.ARCHETYPES;
+        return this.ARCHETYPES.filter(a => a.primary_playstyle === playstyle);
+    },
+
+    getArchetypesByTag(tag) {
+        return this.ARCHETYPES.filter(a => a.tags.includes(tag));
+    },
+
+    getQuestion(id) {
+        return this.INTERVIEW_QUESTIONS.find(q => q.id === id);
+    },
+
+    getAllUniqueItems() {
+        const items = new Set();
+        this.ARCHETYPES.forEach(arch => {
+            arch.tiers.forEach(tier => {
+                tier.items.forEach(item => {
+                    if (item.is_unique) {
+                        items.add(item.item_name);
+                    }
+                });
+            });
+        });
+        return Array.from(items).sort();
+    }
+};
