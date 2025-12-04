@@ -218,10 +218,31 @@ const Interview = {
     /**
      * Finish interview and get recommendations
      */
-    finish() {
-        this.state.recommendations = Recommendations.getRecommendations(this.state.responses);
+    async finish() {
         this.state.active = false;
         this.cleanupKeyboardNavigation();
+
+        // Show loading state
+        const container = document.getElementById('interview-container');
+        if (container) {
+            container.innerHTML = `
+                <div class="interview-loading">
+                    <div class="loading-spinner"></div>
+                    <p>Analyzing market conditions...</p>
+                </div>
+            `;
+        }
+
+        // Get market-enhanced recommendations
+        try {
+            const marketRecs = await Market.getMarketRecommendations(this.state.responses);
+            this.state.recommendations = marketRecs.recommendations;
+            this.state.marketInsights = marketRecs.marketInsights;
+        } catch (error) {
+            console.error('Market analysis failed, using standard recommendations:', error);
+            this.state.recommendations = Recommendations.getRecommendations(this.state.responses);
+            this.state.marketInsights = null;
+        }
 
         // Save to history
         Storage.saveInterviewResult({
@@ -391,51 +412,80 @@ const Interview = {
         const container = document.getElementById('interview-container');
         if (!container || !this.state.recommendations) return;
 
-        const recsHtml = this.state.recommendations.map((rec, index) => `
-            <div class="recommendation-card" onclick="Interview.viewArchetype('${rec.archetype.id}')">
-                <div class="rec-header">
-                    <span class="rec-rank">#${index + 1}</span>
-                    <span class="rec-match">${rec.match_percentage}% Match</span>
-                </div>
-                <h3 class="rec-name">${this.escapeHtml(rec.archetype.name)}</h3>
-                <div class="rec-class">${this.escapeHtml(rec.archetype.class_name)}</div>
-                <p class="rec-desc">${this.escapeHtml(rec.archetype.description)}</p>
+        const recsHtml = this.state.recommendations.map((rec, index) => {
+            const market = rec.market;
+            const hasMarketData = market && market.currentCost !== Infinity;
 
-                <div class="rec-scores">
-                    <div class="score-item">
-                        <span class="score-label">Mapping</span>
-                        <div class="score-bar">
-                            <div class="score-fill" style="width: ${rec.archetype.mapping_score * 10}%"></div>
+            return `
+                <div class="recommendation-card" onclick="Interview.viewArchetype('${rec.archetype.id}')">
+                    <div class="rec-header">
+                        <span class="rec-rank">#${index + 1}</span>
+                        <div class="rec-badges">
+                            <span class="rec-match">${rec.match_percentage}% Match</span>
+                            ${market?.isGoodValue ? '<span class="rec-badge value-badge" title="Great value for cost">💎</span>' : ''}
+                            ${market?.isPriceDropping ? '<span class="rec-badge deal-badge" title="Prices dropping">📉</span>' : ''}
                         </div>
                     </div>
-                    <div class="score-item">
-                        <span class="score-label">Bossing</span>
-                        <div class="score-bar">
-                            <div class="score-fill" style="width: ${rec.archetype.bossing_score * 10}%"></div>
+                    <h3 class="rec-name">${this.escapeHtml(rec.archetype.name)}</h3>
+                    <div class="rec-class">${this.escapeHtml(rec.archetype.class_name)}</div>
+                    <p class="rec-desc">${this.escapeHtml(rec.archetype.description)}</p>
+
+                    ${hasMarketData ? `
+                        <div class="rec-market">
+                            <div class="market-cost">
+                                <span class="cost-label">Starting cost:</span>
+                                <span class="cost-value ${market.affordability}">${Market.formatCost(market.currentCost)}</span>
+                            </div>
+                            ${market.valueScore ? `
+                                <div class="market-value" title="Value score: effectiveness per chaos spent">
+                                    <span class="value-label">Value:</span>
+                                    <span class="value-score">${market.valueScore}</span>
+                                </div>
+                            ` : ''}
+                        </div>
+                    ` : ''}
+
+                    <div class="rec-scores">
+                        <div class="score-item">
+                            <span class="score-label">Mapping</span>
+                            <div class="score-bar">
+                                <div class="score-fill" style="width: ${rec.archetype.mapping_score * 10}%"></div>
+                            </div>
+                        </div>
+                        <div class="score-item">
+                            <span class="score-label">Bossing</span>
+                            <div class="score-bar">
+                                <div class="score-fill" style="width: ${rec.archetype.bossing_score * 10}%"></div>
+                            </div>
                         </div>
                     </div>
-                </div>
 
-                ${rec.recommended_tier ? `
-                    <div class="rec-tier">
-                        <span class="tier-label">Recommended:</span>
-                        <span class="tier-name">${this.escapeHtml(rec.recommended_tier.tier_name)}</span>
-                        <span class="tier-budget">${this.formatBudget(rec.recommended_tier.min_budget, rec.recommended_tier.max_budget)}</span>
+                    ${rec.recommended_tier ? `
+                        <div class="rec-tier">
+                            <span class="tier-label">Recommended:</span>
+                            <span class="tier-name">${this.escapeHtml(rec.recommended_tier.tier_name)}</span>
+                            <span class="tier-budget">${this.formatBudget(rec.recommended_tier.min_budget, rec.recommended_tier.max_budget)}</span>
+                        </div>
+                    ` : ''}
+
+                    <div class="rec-tags">
+                        ${rec.archetype.tags.slice(0, 4).map(tag =>
+                            `<span class="tag">${this.escapeHtml(tag)}</span>`
+                        ).join('')}
                     </div>
-                ` : ''}
-
-                <div class="rec-tags">
-                    ${rec.archetype.tags.slice(0, 4).map(tag =>
-                        `<span class="tag">${this.escapeHtml(tag)}</span>`
-                    ).join('')}
                 </div>
-            </div>
-        `).join('');
+            `;
+        }).join('');
+
+        // Market insights section
+        const insightsHtml = this.state.marketInsights ? this.renderMarketInsights() : '';
 
         container.innerHTML = `
             <div class="interview-results">
                 <h2>Your Recommended Builds</h2>
-                <p class="results-subtitle">Based on your preferences, here are the best builds for you:</p>
+                <p class="results-subtitle">Based on your preferences and current market prices:</p>
+
+                ${insightsHtml}
 
                 <div class="recommendations-grid">
                     ${recsHtml}
@@ -448,6 +498,73 @@ const Interview = {
                     <button class="btn btn-primary" onclick="App.showTab('archetypes')">
                         Browse All Builds
                     </button>
+                </div>
+            </div>
+        `;
+    },
+
+    /**
+     * Render market insights panel
+     */
+    renderMarketInsights() {
+        const insights = this.state.marketInsights;
+        if (!insights) return '';
+
+        const insightCards = [];
+
+        // Best value builds
+        if (insights.bestValue && insights.bestValue.length > 0) {
+            const best = insights.bestValue[0];
+            insightCards.push(`
+                <div class="insight-card insight-value">
+                    <span class="insight-icon">💎</span>
+                    <div class="insight-content">
+                        <strong>Best Value</strong>
+                        <span>${this.escapeHtml(best.archetype.name)}</span>
+                    </div>
+                </div>
+            `);
+        }
+
+        // Price drops
+        if (insights.priceDrops && insights.priceDrops.length > 0) {
+            insightCards.push(`
+                <div class="insight-card insight-deal">
+                    <span class="insight-icon">📉</span>
+                    <div class="insight-content">
+                        <strong>Price Dropping</strong>
+                        <span>${insights.priceDrops.length} builds getting cheaper</span>
+                    </div>
+                </div>
+            `);
+        }
+
+        // Cheapest by selected class
+        const userClass = this.state.responses?.class;
+        if (userClass && userClass !== 'any' && insights.cheapestByClass) {
+            const classBuilds = Object.entries(insights.cheapestByClass)
+                .filter(([className]) => className.toLowerCase().includes(userClass.toLowerCase()));
+            if (classBuilds.length > 0) {
+                const [, cheapest] = classBuilds[0];
+                insightCards.push(`
+                    <div class="insight-card insight-budget">
+                        <span class="insight-icon">💰</span>
+                        <div class="insight-content">
+                            <strong>Cheapest ${this.escapeHtml(userClass)}</strong>
+                            <span>${Market.formatCost(cheapest.cost)}</span>
+                        </div>
+                    </div>
+                `);
+            }
+        }
+
+        if (insightCards.length === 0) return '';
+
+        return `
+            <div class="market-insights">
+                <h3>Market Insights</h3>
+                <div class="insights-grid">
+                    ${insightCards.join('')}
                 </div>
             </div>
         `;

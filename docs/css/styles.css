@@ -2187,3 +2187,231 @@ body.modal-open {
     align-items: center;
     gap: var(--space-xs);
 }
+
+/* ========================================
+   MARKET INSIGHTS & ANALYSIS
+   ======================================== */
+.market-insights {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    padding: var(--space-lg);
+    margin-bottom: var(--space-xl);
+}
+
+.market-insights h3 {
+    font-size: var(--font-lg);
+    margin-bottom: var(--space-md);
+    color: var(--text-primary);
+}
+
+.insights-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(200px, 100%), 1fr));
+    gap: var(--space-md);
+}
+
+.insight-card {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+    padding: var(--space-md);
+    background: var(--bg-tertiary);
+    border-radius: var(--radius);
+    border-left: 3px solid var(--accent-primary);
+}
+
+.insight-card.insight-value {
+    border-left-color: var(--accent-primary);
+}
+
+.insight-card.insight-deal {
+    border-left-color: var(--accent-secondary);
+}
+
+.insight-card.insight-budget {
+    border-left-color: var(--accent-warning);
+}
+
+.insight-icon {
+    font-size: var(--font-2xl);
+    flex-shrink: 0;
+}
+
+.insight-content {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-0-5);
+}
+
+.insight-content strong {
+    font-size: var(--font-sm);
+    color: var(--text-primary);
+}
+
+.insight-content span {
+    font-size: var(--font-xs);
+    color: var(--text-secondary);
+}
+
+/* Recommendation card market data */
+.rec-badges {
+    display: flex;
+    align-items: center;
+    gap: var(--space-xs);
+}
+
+.rec-badge {
+    font-size: var(--font-lg);
+    cursor: help;
+}
+
+.rec-market {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: var(--space-sm);
+    background: var(--bg-tertiary);
+    border-radius: var(--radius);
+    margin-bottom: var(--space-md);
+    gap: var(--space-sm);
+    flex-wrap: wrap;
+}
+
+.market-cost,
+.market-value {
+    display: flex;
+    align-items: center;
+    gap: var(--space-xs);
+}
+
+.cost-label,
+.value-label {
+    font-size: var(--font-xs);
+    color: var(--text-muted);
+}
+
+.cost-value {
+    font-weight: var(--weight-semibold);
+    font-size: var(--font-sm);
+}
+
+.cost-value.very-cheap {
+    color: var(--accent-secondary);
+}
+
+.cost-value.cheap {
+    color: var(--green-400);
+}
+
+.cost-value.moderate {
+    color: var(--accent-warning);
+}
+
+.cost-value.expensive {
+    color: var(--amber-400);
+}
+
+.cost-value.very-expensive {
+    color: var(--accent-danger);
+}
+
+.value-score {
+    font-weight: var(--weight-bold);
+    font-size: var(--font-sm);
+    color: var(--accent-primary);
+}
+
+/* Interview loading state */
+.interview-loading {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: var(--space-3xl);
+    gap: var(--space-lg);
+}
+
+.loading-spinner {
+    width: 48px;
+    height: 48px;
+    border: 3px solid var(--bg-tertiary);
+    border-top-color: var(--accent-primary);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+.interview-loading p {
+    color: var(--text-secondary);
+    font-size: var(--font-base);
+}
+
+/* Affordability badges */
+.badge-success {
+    background: var(--accent-secondary);
+    color: var(--text-inverse);
+}
+
+.badge-success-light {
+    background: oklch(65% 0.18 145 / 0.2);
+    color: var(--accent-secondary);
+}
+
+.badge-warning {
+    background: var(--accent-warning);
+    color: var(--text-inverse);
+}
+
+.badge-danger-light {
+    background: oklch(60% 0.22 25 / 0.2);
+    color: var(--accent-danger);
+}
+
+.badge-danger {
+    background: var(--accent-danger);
+    color: white;
+}
+
+.badge-muted {
+    background: var(--bg-tertiary);
+    color: var(--text-muted);
+}
+
+/* Market trend indicators */
+.trend-up {
+    color: var(--accent-danger);
+}
+
+.trend-up::before {
+    content: '↑';
+    margin-right: var(--space-0-5);
+}
+
+.trend-down {
+    color: var(--accent-secondary);
+}
+
+.trend-down::before {
+    content: '↓';
+    margin-right: var(--space-0-5);
+}
+
+.trend-stable {
+    color: var(--text-muted);
+}
+
+/* Value score bar */
+.value-bar {
+    height: 4px;
+    background: var(--bg-hover);
+    border-radius: 2px;
+    overflow: hidden;
+    flex: 1;
+    min-width: 60px;
+}
+
+.value-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent-warning), var(--accent-secondary));
+    transition: width var(--duration-normal) var(--ease-out);
+}
