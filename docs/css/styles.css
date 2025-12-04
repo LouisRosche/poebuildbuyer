@@ -1257,6 +1257,18 @@ body.modal-open {
     line-height: 1.6;
 }
 
+/* Skill Gems Section */
+.skill-gems-section {
+    margin-bottom: var(--space-xl);
+    padding-top: var(--space-lg);
+    border-top: 1px solid var(--border-subtle);
+}
+
+.skill-gems-section h3 {
+    margin-bottom: var(--space-md);
+    font-size: var(--font-xl);
+}
+
 /* Budget Tiers */
 .budget-tiers h3 {
     margin-bottom: var(--space-md);
@@ -1406,6 +1418,126 @@ body.modal-open {
 .priority-stats {
     color: var(--text-secondary);
     line-height: 1.4;
+}
+
+/* Skill Gem Setup */
+.gem-setup {
+    margin-top: var(--space-lg);
+}
+
+.gem-section {
+    margin-bottom: var(--space-md);
+}
+
+.gem-section-title {
+    font-size: var(--font-xs);
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: var(--space-xs);
+}
+
+.gem-section.main-skill {
+    background: var(--bg-secondary);
+    padding: var(--space-md);
+    border-radius: var(--radius);
+    border-left: 3px solid var(--accent-primary);
+}
+
+.gem-section.main-skill .gem-name {
+    font-size: var(--font-lg);
+    font-weight: var(--font-semibold);
+    color: var(--text-primary);
+    margin-bottom: var(--space-xs);
+}
+
+.gem-section.main-skill .gem-description {
+    font-size: var(--font-sm);
+    color: var(--text-secondary);
+    margin-bottom: var(--space-sm);
+    line-height: 1.5;
+}
+
+.gem-links {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-xs);
+}
+
+.links-label {
+    font-size: var(--font-xs);
+    color: var(--text-muted);
+    margin-right: var(--space-xs);
+}
+
+.gem-link {
+    background: var(--bg-tertiary);
+    padding: var(--space-1) var(--space-sm);
+    border-radius: var(--radius);
+    font-size: var(--font-xs);
+    color: oklch(75% 0.15 280);
+}
+
+.gem-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-xs);
+}
+
+.gem-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-md);
+}
+
+.gem-row .gem-section {
+    flex: 1;
+    min-width: 100px;
+}
+
+.gem-badge {
+    display: inline-block;
+    padding: var(--space-1) var(--space-sm);
+    border-radius: var(--radius);
+    font-size: var(--font-sm);
+    text-decoration: none;
+    transition: var(--transition-colors);
+}
+
+.gem-badge.aura {
+    background: oklch(25% 0.08 280);
+    color: oklch(80% 0.12 280);
+    border: 1px solid oklch(35% 0.1 280);
+}
+
+.gem-badge.movement {
+    background: oklch(25% 0.08 180);
+    color: oklch(80% 0.12 180);
+    border: 1px solid oklch(35% 0.1 180);
+}
+
+.gem-badge.guard {
+    background: oklch(25% 0.08 60);
+    color: oklch(80% 0.12 60);
+    border: 1px solid oklch(35% 0.1 60);
+}
+
+.gem-badge.curse {
+    background: oklch(25% 0.08 320);
+    color: oklch(80% 0.12 320);
+    border: 1px solid oklch(35% 0.1 320);
+}
+
+.gem-badge.utility {
+    background: oklch(25% 0.06 0);
+    color: oklch(80% 0.02 0);
+    border: 1px solid oklch(35% 0.04 0);
+}
+
+.gem-badge:hover {
+    filter: brightness(1.2);
+    transform: translateY(-1px);
 }
 
 .tier-total {

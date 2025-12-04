@@ -464,6 +464,11 @@ const App = {
                 <p>${this.escapeHtml(archetype.leveling_notes)}</p>
             </div>
 
+            <div class="skill-gems-section">
+                <h3>Skill Gems</h3>
+                ${typeof SkillGems !== 'undefined' ? SkillGems.renderBuildGems(archetype.id) : '<p class="text-muted">Gem data loading...</p>'}
+            </div>
+
             <div class="budget-tiers">
                 <h3>Budget Tiers</h3>
                 <div id="price-status" class="price-status"></div>
