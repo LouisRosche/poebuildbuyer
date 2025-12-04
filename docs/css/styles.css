@@ -819,6 +819,11 @@ body.modal-open {
     padding-right: 50px;
 }
 
+/* Build Detail Modal - prevent overlap with close button */
+.modal-content .build-header {
+    padding-right: 50px;
+}
+
 .archetype-header h2 {
     margin: 0;
     font-size: var(--font-2xl);
