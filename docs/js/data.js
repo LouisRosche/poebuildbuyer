@@ -1138,10 +1138,10 @@ const Data = {
             ]
         },
         {
-            id: "storm-brand-hierophant",
-            name: "Storm Brand Hierophant",
-            slug: "storm-brand-hierophant",
-            class_name: "Hierophant",
+            id: "storm-brand-stormweaver",
+            name: "Storm Brand Stormweaver",
+            slug: "storm-brand-stormweaver",
+            class_name: "Stormweaver",
             primary_playstyle: "spell",
             damage_type: "lightning",
             tags: ["lightning", "brand", "league-start", "fast-mapper", "totems"],
@@ -1249,10 +1249,10 @@ const Data = {
             ]
         },
         {
-            id: "spark-inquisitor",
-            name: "Spark Aura Inquisitor",
-            slug: "spark-inquisitor",
-            class_name: "Inquisitor",
+            id: "spark-stormweaver",
+            name: "Spark Aura Stormweaver",
+            slug: "spark-stormweaver",
+            class_name: "Stormweaver",
             primary_playstyle: "spell",
             damage_type: "lightning",
             tags: ["lightning", "spell", "aura-stacker", "fast-mapper", "projectile"],
@@ -1307,10 +1307,10 @@ const Data = {
             ]
         },
         {
-            id: "herald-of-agony-guardian",
-            name: "Herald of Agony Guardian",
-            slug: "herald-of-agony-guardian",
-            class_name: "Guardian",
+            id: "herald-of-agony-necromancer",
+            name: "Herald of Agony Necromancer",
+            slug: "herald-of-agony-necromancer",
+            class_name: "Necromancer",
             primary_playstyle: "minion",
             damage_type: "physical",
             tags: ["minion", "poison", "tanky", "boss-killer", "low-button"],
@@ -1898,8 +1898,7 @@ const Data = {
             ranger: ['Ranger', 'Deadeye', 'Pathfinder'],
             mercenary: ['Mercenary', 'Witchhunter', 'Gemling Legionnaire'],
             monk: ['Monk', 'Invoker', 'Acolyte of Chayula'],
-            warrior: ['Warrior', 'Slayer', 'Juggernaut', 'Berserker', 'Titan'],
-            templar: ['Templar', 'Hierophant', 'Inquisitor', 'Guardian']
+            warrior: ['Warrior', 'Slayer', 'Juggernaut', 'Berserker', 'Titan']
         };
         const validClasses = classMap[className.toLowerCase()] || [className];
         return this.ARCHETYPES.filter(a => validClasses.includes(a.class_name));

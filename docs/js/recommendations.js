@@ -4,15 +4,14 @@
  */
 
 const Recommendations = {
-    // Class name mapping for scoring
+    // Class name mapping for scoring (PoE2 classes only)
     CLASS_MAPPING: {
         witch: ['Witch', 'Necromancer', 'Blood Mage', 'Elementalist', 'Occultist'],
         sorceress: ['Sorceress', 'Stormweaver', 'Chronomancer'],
         ranger: ['Ranger', 'Deadeye', 'Pathfinder'],
         mercenary: ['Mercenary', 'Witchhunter', 'Gemling Legionnaire'],
         monk: ['Monk', 'Invoker', 'Acolyte of Chayula'],
-        warrior: ['Warrior', 'Slayer', 'Juggernaut', 'Berserker', 'Titan'],
-        templar: ['Templar', 'Hierophant', 'Inquisitor', 'Guardian']
+        warrior: ['Warrior', 'Slayer', 'Juggernaut', 'Berserker', 'Titan']
     },
 
     // Tags to avoid mapping
