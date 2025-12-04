@@ -498,6 +498,8 @@ const App = {
 
             for (const item of tier.items) {
                 let priceHtml = '';
+                let statPriorityHtml = '';
+
                 if (item.is_unique) {
                     try {
                         const price = await Prices.getPrice(item.item_name, item.slot);
@@ -516,18 +518,35 @@ const App = {
                         priceHtml = `<span class="item-price error-inline">Failed to load</span>`;
                     }
                 } else {
-                    priceHtml = `<span class="item-price rare">Rare - varies</span>`;
+                    // Generate stat priorities for rare items
+                    const statPriorities = this.getRareStatPriorities(item, archetype);
+                    priceHtml = `<span class="item-price rare">Craft/Buy Rare</span>`;
+                    statPriorityHtml = `
+                        <div class="stat-priorities">
+                            <div class="stat-priority-row essential">
+                                <span class="priority-label">Must have:</span>
+                                <span class="priority-stats">${statPriorities.must_have.join(', ')}</span>
+                            </div>
+                            <div class="stat-priority-row important">
+                                <span class="priority-label">Important:</span>
+                                <span class="priority-stats">${statPriorities.good_to_have.join(', ')}</span>
+                            </div>
+                        </div>
+                    `;
                 }
 
                 itemsHtml += `
-                    <div class="tier-item">
-                        <span class="item-slot">${this.escapeHtml(item.slot)}</span>
-                        <span class="item-name ${item.is_unique ? 'unique' : 'rare'} has-tooltip"
-                              data-item-tooltip="true"
-                              data-item-name="${this.escapeHtml(item.item_name)}"
-                              data-item-slot="${item.slot}"
-                              data-item-unique="${item.is_unique}">${this.escapeHtml(item.item_name)}</span>
-                        ${priceHtml}
+                    <div class="tier-item ${!item.is_unique ? 'rare-item-expanded' : ''}">
+                        <div class="tier-item-main">
+                            <span class="item-slot">${this.escapeHtml(item.slot)}</span>
+                            <span class="item-name ${item.is_unique ? 'unique' : 'rare'} has-tooltip"
+                                  data-item-tooltip="true"
+                                  data-item-name="${this.escapeHtml(item.item_name)}"
+                                  data-item-slot="${item.slot}"
+                                  data-item-unique="${item.is_unique}">${this.escapeHtml(item.item_name)}</span>
+                            ${priceHtml}
+                        </div>
+                        ${statPriorityHtml}
                     </div>
                 `;
             }
@@ -908,6 +927,80 @@ const App = {
         if (!dateStr) return 'Unknown';
         const date = new Date(dateStr);
         return date.toLocaleDateString();
+    },
+
+    /**
+     * Get stat priorities for rare items based on slot and archetype
+     */
+    getRareStatPriorities(item, archetype) {
+        // Use MLOptimizer if available
+        if (typeof MLOptimizer !== 'undefined') {
+            return MLOptimizer.getStatPriorities(item.slot, archetype);
+        }
+
+        // Fallback: use item's min_stats if defined, or generate defaults
+        if (item.min_stats) {
+            const stats = Object.entries(item.min_stats).map(([stat, value]) => {
+                if (typeof value === 'number') {
+                    return `+${value} ${stat}`;
+                }
+                return stat;
+            });
+            return {
+                must_have: stats.slice(0, 2),
+                good_to_have: stats.slice(2, 4),
+                nice_to_have: []
+            };
+        }
+
+        // Default priorities by slot
+        const defaults = {
+            weapon: {
+                must_have: ['+% spell/attack damage', '+# to gem levels'],
+                good_to_have: ['critical strike chance', 'attack/cast speed']
+            },
+            offhand: {
+                must_have: ['+# to maximum life', '+% spell damage'],
+                good_to_have: ['+% elemental resistances', 'critical strike chance']
+            },
+            body: {
+                must_have: ['+# to maximum life', '+% elemental resistances'],
+                good_to_have: ['+# to armour/evasion', '+% increased life']
+            },
+            helmet: {
+                must_have: ['+# to maximum life', '+% elemental resistances'],
+                good_to_have: ['+# to accuracy', 'nearby enemy -% resistance']
+            },
+            gloves: {
+                must_have: ['+# to maximum life', '+% elemental resistances'],
+                good_to_have: ['attack speed', '+# to accuracy rating']
+            },
+            boots: {
+                must_have: ['+#% movement speed', '+# to maximum life'],
+                good_to_have: ['+% elemental resistances', '+# to armour/evasion']
+            },
+            belt: {
+                must_have: ['+# to maximum life', '+% elemental resistances'],
+                good_to_have: ['+% increased damage', '+# to strength']
+            },
+            amulet: {
+                must_have: ['+# to maximum life', '+% critical strike multiplier'],
+                good_to_have: ['+% elemental resistances', '+# to attributes']
+            },
+            ring1: {
+                must_have: ['+# to maximum life', '+% elemental resistances'],
+                good_to_have: ['+# to accuracy', 'adds # damage to attacks']
+            },
+            ring2: {
+                must_have: ['+# to maximum life', '+% elemental resistances'],
+                good_to_have: ['+# to accuracy', 'adds # damage to attacks']
+            }
+        };
+
+        return defaults[item.slot] || {
+            must_have: ['+# to maximum life', '+% elemental resistances'],
+            good_to_have: ['+# to armour', '+% increased damage']
+        };
     },
 
     /**

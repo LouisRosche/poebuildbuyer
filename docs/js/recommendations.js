@@ -148,13 +148,30 @@ const Recommendations = {
         const archetypes = Data.ARCHETYPES;
         const scored = [];
 
-        // Score each archetype
+        // Score each archetype - use ML optimizer if available for enhanced scoring
+        const useMLScoring = typeof MLOptimizer !== 'undefined';
+        const mlPreferences = useMLScoring ? MLOptimizer.analyzeUserPreferences(responses) : null;
+
         for (const archetype of archetypes) {
-            const score = this.scoreArchetype(archetype, responses);
+            // Base score from traditional algorithm
+            let score = this.scoreArchetype(archetype, responses);
+
+            // Enhance with ML scoring if available
+            if (useMLScoring && score > 0) {
+                const mlScore = MLOptimizer.scoreBuild(archetype, mlPreferences);
+                // Blend traditional and ML scores (60% traditional, 40% ML)
+                score = (score * 0.6) + (mlScore * 0.4);
+            }
+
             if (score > 0) {
+                const matchReasons = useMLScoring
+                    ? MLOptimizer.generateMatchReasons(archetype, mlPreferences, score)
+                    : [];
+
                 scored.push({
                     archetype,
-                    score
+                    score,
+                    matchReasons
                 });
             }
         }
@@ -215,6 +232,7 @@ const Recommendations = {
                 },
                 score: Math.round(item.score * 10) / 10,
                 match_percentage: Math.min(100, Math.round(item.score)),
+                match_reasons: item.matchReasons || [],
                 recommended_tier: recommendedTier,
                 all_tiers: tiers
             });

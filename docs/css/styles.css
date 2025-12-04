@@ -1357,6 +1357,57 @@ body.modal-open {
     color: var(--text-muted);
 }
 
+/* Rare item stat priorities */
+.rare-item-expanded {
+    flex-direction: column;
+    align-items: stretch;
+}
+
+.tier-item-main {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+    width: 100%;
+}
+
+.stat-priorities {
+    margin-top: var(--space-xs);
+    padding: var(--space-sm);
+    background: var(--bg-secondary);
+    border-radius: var(--radius);
+    border-left: 3px solid var(--rare-color);
+}
+
+.stat-priority-row {
+    display: flex;
+    gap: var(--space-sm);
+    font-size: var(--font-xs);
+    margin-bottom: var(--space-1);
+}
+
+.stat-priority-row:last-child {
+    margin-bottom: 0;
+}
+
+.stat-priority-row.essential .priority-label {
+    color: oklch(70% 0.15 25);
+    font-weight: var(--font-semibold);
+}
+
+.stat-priority-row.important .priority-label {
+    color: oklch(70% 0.12 60);
+}
+
+.priority-label {
+    flex-shrink: 0;
+    min-width: 70px;
+}
+
+.priority-stats {
+    color: var(--text-secondary);
+    line-height: 1.4;
+}
+
 .tier-total {
     display: flex;
     justify-content: space-between;
