@@ -1580,6 +1580,23 @@ a:focus:not(:focus-visible) {
     background: var(--accent-danger);
 }
 
+.price-status-dot.estimate {
+    background: var(--accent-warning);
+    animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+}
+
+.estimate-note {
+    cursor: help;
+    color: var(--accent-warning);
+    font-size: var(--font-sm);
+    margin-left: var(--space-xs);
+}
+
 .refresh-btn {
     background: none;
     border: none;

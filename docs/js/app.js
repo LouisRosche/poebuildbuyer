@@ -63,19 +63,33 @@ const App = {
         const container = document.getElementById('price-status');
         if (!container) return;
 
-        const statusText = this.priceStatus === 'fresh'
-            ? 'Prices updated'
-            : this.priceStatus === 'stale'
-                ? 'Prices may be outdated'
-                : 'Using cached prices';
+        const usingEstimates = Prices.usingEstimates;
 
-        const timeText = this.lastPriceUpdate
+        let statusText;
+        let statusClass;
+
+        if (usingEstimates) {
+            statusText = 'Using estimated prices';
+            statusClass = 'estimate';
+        } else if (this.priceStatus === 'fresh') {
+            statusText = 'Live prices';
+            statusClass = 'fresh';
+        } else if (this.priceStatus === 'stale') {
+            statusText = 'Prices may be outdated';
+            statusClass = 'stale';
+        } else {
+            statusText = 'Using cached prices';
+            statusClass = 'error';
+        }
+
+        const timeText = this.lastPriceUpdate && !usingEstimates
             ? this.formatTimeAgo(this.lastPriceUpdate)
             : '';
 
         container.innerHTML = `
-            <span class="price-status-dot ${this.priceStatus}"></span>
+            <span class="price-status-dot ${statusClass}"></span>
             <span>${statusText}${timeText ? ` (${timeText})` : ''}</span>
+            ${usingEstimates ? '<span class="estimate-note" title="Prices are rough estimates. Actual prices vary by league.">ⓘ</span>' : ''}
             <button class="refresh-btn" onclick="App.refreshPrices()" title="Refresh prices">
                 ↻
             </button>
