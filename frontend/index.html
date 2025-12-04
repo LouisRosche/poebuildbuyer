@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PoE2 Build Tracker</title>
+    <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>PoE2 Build Tracker</h1>
+            <p class="subtitle">Track prices for your Path of Exile 2 builds</p>
+        </header>
+
+        <nav class="tabs">
+            <button class="tab active" data-tab="builds">Builds</button>
+            <button class="tab" data-tab="create">Create Build</button>
+            <button class="tab" data-tab="prices">Price Lookup</button>
+            <button class="tab" data-tab="currency">Currency</button>
+        </nav>
+
+        <!-- Builds Tab -->
+        <section id="builds" class="tab-content active">
+            <div class="section-header">
+                <h2>Your Builds</h2>
+                <button id="refresh-builds" class="btn btn-secondary">Refresh</button>
+            </div>
+            <div id="builds-list" class="builds-grid">
+                <p class="loading">Loading builds...</p>
+            </div>
+        </section>
+
+        <!-- Create Build Tab -->
+        <section id="create" class="tab-content">
+            <h2>Create New Build</h2>
+            <form id="create-build-form" class="build-form">
+                <div class="form-group">
+                    <label for="build-name">Build Name</label>
+                    <input type="text" id="build-name" required placeholder="e.g., Blackflame Blood Mage">
+                </div>
+                <div class="form-group">
+                    <label for="build-class">Class</label>
+                    <select id="build-class">
+                        <option value="">Select class...</option>
+                        <option value="Blood Mage">Blood Mage</option>
+                        <option value="Necromancer">Necromancer</option>
+                        <option value="Ranger">Ranger</option>
+                        <option value="Slayer">Slayer</option>
+                        <option value="Monk">Monk</option>
+                        <option value="Sorceress">Sorceress</option>
+                        <option value="Mercenary">Mercenary</option>
+                        <option value="Witch">Witch</option>
+                        <option value="Warrior">Warrior</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="build-description">Description</label>
+                    <textarea id="build-description" rows="3" placeholder="Optional build description..."></textarea>
+                </div>
+
+                <h3>Items</h3>
+                <div id="items-container" class="items-container">
+                    <!-- Item slots will be rendered here -->
+                </div>
+
+                <button type="button" id="add-item" class="btn btn-secondary">+ Add Item</button>
+                <button type="submit" class="btn btn-primary">Create Build</button>
+            </form>
+        </section>
+
+        <!-- Price Lookup Tab -->
+        <section id="prices" class="tab-content">
+            <h2>Price Lookup</h2>
+            <form id="price-lookup-form" class="price-form">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="item-name">Item Name</label>
+                        <input type="text" id="item-name" required placeholder="e.g., Kaom's Heart" list="item-suggestions">
+                        <datalist id="item-suggestions"></datalist>
+                    </div>
+                    <div class="form-group">
+                        <label for="item-type">Base Type (optional)</label>
+                        <input type="text" id="item-type" placeholder="e.g., Body Armour">
+                    </div>
+                    <button type="submit" class="btn btn-primary">Look Up</button>
+                </div>
+            </form>
+            <div id="price-result" class="price-result hidden">
+                <!-- Price results will be displayed here -->
+            </div>
+        </section>
+
+        <!-- Currency Tab -->
+        <section id="currency" class="tab-content">
+            <h2>Currency Rates</h2>
+            <div id="currency-rates" class="currency-grid">
+                <p class="loading">Loading rates...</p>
+            </div>
+
+            <h3>Currency Converter</h3>
+            <form id="currency-converter" class="converter-form">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="convert-amount">Amount</label>
+                        <input type="number" id="convert-amount" step="0.01" min="0" value="1">
+                    </div>
+                    <div class="form-group">
+                        <label for="convert-from">From</label>
+                        <select id="convert-from">
+                            <option value="chaos">Chaos</option>
+                            <option value="divine">Divine</option>
+                            <option value="exalt">Exalt</option>
+                            <option value="annul">Annul</option>
+                            <option value="vaal">Vaal</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="convert-to">To</label>
+                        <select id="convert-to">
+                            <option value="chaos">Chaos</option>
+                            <option value="divine">Divine</option>
+                            <option value="exalt">Exalt</option>
+                            <option value="annul">Annul</option>
+                            <option value="vaal">Vaal</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Convert</button>
+                </div>
+            </form>
+            <div id="convert-result" class="convert-result hidden"></div>
+        </section>
+
+        <!-- Build Detail Modal -->
+        <div id="build-modal" class="modal hidden">
+            <div class="modal-content">
+                <span class="modal-close">&times;</span>
+                <div id="build-detail">
+                    <!-- Build details will be rendered here -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Add Item Modal -->
+        <div id="item-modal" class="modal hidden">
+            <div class="modal-content modal-small">
+                <span class="modal-close">&times;</span>
+                <h3>Add Item</h3>
+                <form id="add-item-form">
+                    <div class="form-group">
+                        <label for="modal-slot">Slot</label>
+                        <select id="modal-slot" required>
+                            <option value="weapon">Weapon</option>
+                            <option value="offhand">Offhand</option>
+                            <option value="body">Body Armour</option>
+                            <option value="helmet">Helmet</option>
+                            <option value="gloves">Gloves</option>
+                            <option value="boots">Boots</option>
+                            <option value="belt">Belt</option>
+                            <option value="amulet">Amulet</option>
+                            <option value="ring1">Ring 1</option>
+                            <option value="ring2">Ring 2</option>
+                            <option value="jewel1">Jewel 1</option>
+                            <option value="jewel2">Jewel 2</option>
+                            <option value="jewel3">Jewel 3</option>
+                            <option value="support">Support Gem</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="modal-item-name">Item Name</label>
+                        <input type="text" id="modal-item-name" required placeholder="e.g., Kaom's Heart" list="modal-item-suggestions">
+                        <datalist id="modal-item-suggestions"></datalist>
+                    </div>
+                    <div class="form-group">
+                        <label for="modal-item-type">Base Type</label>
+                        <input type="text" id="modal-item-type" placeholder="e.g., Body Armour">
+                    </div>
+                    <div class="form-group">
+                        <label for="modal-priority">Priority</label>
+                        <select id="modal-priority">
+                            <option value="1">Core (Required)</option>
+                            <option value="2">Important</option>
+                            <option value="3">Luxury</option>
+                        </select>
+                    </div>
+                    <div class="form-group checkbox">
+                        <input type="checkbox" id="modal-is-unique" checked>
+                        <label for="modal-is-unique">Unique Item</label>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Add Item</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <p>PoE2 Build Tracker - Not affiliated with Grinding Gear Games</p>
+    </footer>
+
+    <script src="/static/app.js"></script>
+</body>
+</html>

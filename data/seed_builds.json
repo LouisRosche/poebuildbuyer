@@ -1,0 +1,386 @@
+[
+  {
+    "name": "Blackflame Purple Fire Blood Mage",
+    "class_name": "Blood Mage",
+    "description": "Chaos-converted fire damage build utilizing the Blackflame mechanic for strong DoT damage.",
+    "items": [
+      {
+        "slot": "body",
+        "item_name": "Kaom's Heart",
+        "item_type": "Body Armour",
+        "is_unique": true,
+        "required": true,
+        "priority": 1
+      },
+      {
+        "slot": "offhand",
+        "item_name": "Rathpith Globe",
+        "item_type": "Sacred Focus",
+        "is_unique": true,
+        "required": true,
+        "priority": 1
+      },
+      {
+        "slot": "helmet",
+        "item_name": "Veil of the Night",
+        "item_type": "Helmet",
+        "is_unique": true,
+        "required": false,
+        "priority": 2
+      },
+      {
+        "slot": "weapon",
+        "item_name": "Rare Wand",
+        "item_type": "Wand",
+        "is_unique": false,
+        "required": true,
+        "priority": 1,
+        "min_stats": {
+          "+# to Level of all Spell Skill Gems": 3
+        }
+      },
+      {
+        "slot": "amulet",
+        "item_name": "Stone of Lazhwar",
+        "item_type": "Amulet",
+        "is_unique": true,
+        "required": false,
+        "priority": 3
+      },
+      {
+        "slot": "ring1",
+        "item_name": "Snakepit",
+        "item_type": "Ring",
+        "is_unique": true,
+        "required": true,
+        "priority": 2
+      },
+      {
+        "slot": "ring2",
+        "item_name": "Kalandra's Touch",
+        "item_type": "Ring",
+        "is_unique": true,
+        "required": false,
+        "priority": 3
+      },
+      {
+        "slot": "gloves",
+        "item_name": "Atziri's Acuity",
+        "item_type": "Gloves",
+        "is_unique": true,
+        "required": true,
+        "priority": 2
+      },
+      {
+        "slot": "boots",
+        "item_name": "Atziri's Step",
+        "item_type": "Boots",
+        "is_unique": true,
+        "required": false,
+        "priority": 3
+      },
+      {
+        "slot": "belt",
+        "item_name": "Darkness Enthroned",
+        "item_type": "Belt",
+        "is_unique": true,
+        "required": false,
+        "priority": 2
+      },
+      {
+        "slot": "jewel1",
+        "item_name": "Undying Hate",
+        "item_type": "Jewel",
+        "is_unique": true,
+        "required": true,
+        "priority": 1,
+        "variant": "Tecrod"
+      },
+      {
+        "slot": "jewel2",
+        "item_name": "Heart of the Well",
+        "item_type": "Jewel",
+        "is_unique": true,
+        "required": true,
+        "priority": 2
+      },
+      {
+        "slot": "jewel3",
+        "item_name": "From Nothing",
+        "item_type": "Jewel",
+        "is_unique": true,
+        "required": false,
+        "priority": 3
+      },
+      {
+        "slot": "support",
+        "item_name": "Atalui's Bloodletting",
+        "item_type": "Lineage Gem",
+        "is_unique": true,
+        "required": true,
+        "priority": 1
+      }
+    ]
+  },
+  {
+    "name": "Minion Army Necromancer",
+    "class_name": "Necromancer",
+    "description": "Classic summoner build with spectres, zombies, and skeletons.",
+    "items": [
+      {
+        "slot": "body",
+        "item_name": "Vis Mortis",
+        "item_type": "Body Armour",
+        "is_unique": true,
+        "required": true,
+        "priority": 1
+      },
+      {
+        "slot": "helmet",
+        "item_name": "The Baron",
+        "item_type": "Helmet",
+        "is_unique": true,
+        "required": true,
+        "priority": 1
+      },
+      {
+        "slot": "weapon",
+        "item_name": "Cerberus Limb",
+        "item_type": "Sceptre",
+        "is_unique": true,
+        "required": true,
+        "priority": 1
+      },
+      {
+        "slot": "offhand",
+        "item_name": "Advancing Fortress",
+        "item_type": "Tower Shield",
+        "is_unique": true,
+        "required": false,
+        "priority": 2
+      },
+      {
+        "slot": "boots",
+        "item_name": "Bones of Ullr",
+        "item_type": "Boots",
+        "is_unique": true,
+        "required": true,
+        "priority": 1
+      },
+      {
+        "slot": "amulet",
+        "item_name": "Sidhebreath",
+        "item_type": "Amulet",
+        "is_unique": true,
+        "required": false,
+        "priority": 2
+      },
+      {
+        "slot": "ring1",
+        "item_name": "Heartbound Loop",
+        "item_type": "Ring",
+        "is_unique": true,
+        "required": false,
+        "priority": 3
+      },
+      {
+        "slot": "gloves",
+        "item_name": "Grip of the Council",
+        "item_type": "Gloves",
+        "is_unique": true,
+        "required": true,
+        "priority": 2
+      },
+      {
+        "slot": "belt",
+        "item_name": "Darkness Enthroned",
+        "item_type": "Belt",
+        "is_unique": true,
+        "required": true,
+        "priority": 2
+      },
+      {
+        "slot": "jewel1",
+        "item_name": "Violent Dead",
+        "item_type": "Jewel",
+        "is_unique": true,
+        "required": true,
+        "priority": 1
+      }
+    ]
+  },
+  {
+    "name": "Elemental Hit Ranger",
+    "class_name": "Ranger",
+    "description": "Fast-clearing bow build with elemental damage conversion.",
+    "items": [
+      {
+        "slot": "body",
+        "item_name": "Queen of the Forest",
+        "item_type": "Body Armour",
+        "is_unique": true,
+        "required": true,
+        "priority": 1
+      },
+      {
+        "slot": "helmet",
+        "item_name": "Rat's Nest",
+        "item_type": "Helmet",
+        "is_unique": true,
+        "required": true,
+        "priority": 2
+      },
+      {
+        "slot": "boots",
+        "item_name": "Seven-League Step",
+        "item_type": "Boots",
+        "is_unique": true,
+        "required": false,
+        "priority": 3
+      },
+      {
+        "slot": "gloves",
+        "item_name": "Shadows and Dust",
+        "item_type": "Gloves",
+        "is_unique": true,
+        "required": true,
+        "priority": 2
+      },
+      {
+        "slot": "belt",
+        "item_name": "Ryslatha's Coil",
+        "item_type": "Belt",
+        "is_unique": true,
+        "required": true,
+        "priority": 1
+      },
+      {
+        "slot": "amulet",
+        "item_name": "Xoph's Blood",
+        "item_type": "Amulet",
+        "is_unique": true,
+        "required": true,
+        "priority": 1
+      },
+      {
+        "slot": "ring1",
+        "item_name": "Call of the Brotherhood",
+        "item_type": "Ring",
+        "is_unique": true,
+        "required": true,
+        "priority": 1
+      },
+      {
+        "slot": "ring2",
+        "item_name": "Pyre",
+        "item_type": "Ring",
+        "is_unique": true,
+        "required": false,
+        "priority": 2
+      },
+      {
+        "slot": "jewel1",
+        "item_name": "Grand Spectrum",
+        "item_type": "Jewel",
+        "is_unique": true,
+        "required": true,
+        "priority": 2
+      },
+      {
+        "slot": "jewel2",
+        "item_name": "Grand Spectrum",
+        "item_type": "Jewel",
+        "is_unique": true,
+        "required": true,
+        "priority": 2
+      },
+      {
+        "slot": "jewel3",
+        "item_name": "Grand Spectrum",
+        "item_type": "Jewel",
+        "is_unique": true,
+        "required": true,
+        "priority": 2
+      }
+    ]
+  },
+  {
+    "name": "Cyclone Slayer",
+    "class_name": "Slayer",
+    "description": "High sustain melee build with constant life leech.",
+    "items": [
+      {
+        "slot": "body",
+        "item_name": "Belly of the Beast",
+        "item_type": "Body Armour",
+        "is_unique": true,
+        "required": true,
+        "priority": 1
+      },
+      {
+        "slot": "helmet",
+        "item_name": "Starkonja's Head",
+        "item_type": "Helmet",
+        "is_unique": true,
+        "required": true,
+        "priority": 2
+      },
+      {
+        "slot": "boots",
+        "item_name": "Kaom's Roots",
+        "item_type": "Boots",
+        "is_unique": true,
+        "required": true,
+        "priority": 1
+      },
+      {
+        "slot": "gloves",
+        "item_name": "Maligaro's Virtuosity",
+        "item_type": "Gloves",
+        "is_unique": true,
+        "required": false,
+        "priority": 3
+      },
+      {
+        "slot": "belt",
+        "item_name": "Headhunter",
+        "item_type": "Belt",
+        "is_unique": true,
+        "required": false,
+        "priority": 3
+      },
+      {
+        "slot": "amulet",
+        "item_name": "Carnage Heart",
+        "item_type": "Amulet",
+        "is_unique": true,
+        "required": true,
+        "priority": 1
+      },
+      {
+        "slot": "ring1",
+        "item_name": "Le Heup of All",
+        "item_type": "Ring",
+        "is_unique": true,
+        "required": false,
+        "priority": 3
+      },
+      {
+        "slot": "ring2",
+        "item_name": "Thief's Torment",
+        "item_type": "Ring",
+        "is_unique": true,
+        "required": true,
+        "priority": 2
+      },
+      {
+        "slot": "jewel1",
+        "item_name": "Conqueror's Efficiency",
+        "item_type": "Jewel",
+        "is_unique": true,
+        "required": true,
+        "priority": 2
+      }
+    ]
+  }
+]
