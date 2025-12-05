@@ -15,7 +15,6 @@ const ItemPanel = {
         },
         trade: {
             name: 'PoE2 Trade',
-            // Simple search - user types in the search box
             baseUrl: 'https://www.pathofexile.com/trade2/search/poe2/Standard',
             icon: 'shopping-cart',
             description: 'Search for this item on trade site'
@@ -26,6 +25,25 @@ const ItemPanel = {
             icon: 'chart-line',
             description: 'Price history and market trends'
         }
+    },
+
+    // Map slots to poe.ninja categories
+    NINJA_CATEGORIES: {
+        weapon: 'unique-weapons',
+        offhand: 'unique-armours', // shields are armour
+        body: 'unique-armours',
+        helmet: 'unique-armours',
+        gloves: 'unique-armours',
+        boots: 'unique-armours',
+        belt: 'unique-accessories',
+        amulet: 'unique-accessories',
+        ring1: 'unique-accessories',
+        ring2: 'unique-accessories',
+        jewel1: 'unique-jewels',
+        jewel2: 'unique-jewels',
+        jewel3: 'unique-jewels',
+        flask: 'unique-flasks',
+        quiver: 'unique-armours'
     },
 
     // Panel element
@@ -182,7 +200,7 @@ const ItemPanel = {
             <div class="panel-sources">
                 <div class="panel-sources-title">External Resources</div>
                 <div class="panel-source-list">
-                    ${this.renderSourceLinks(itemName, isUnique)}
+                    ${this.renderSourceLinks(itemName, isUnique, slot)}
                 </div>
             </div>
 
@@ -201,9 +219,9 @@ const ItemPanel = {
     /**
      * Render source links
      */
-    renderSourceLinks(itemName, isUnique) {
+    renderSourceLinks(itemName, isUnique, slot = '') {
         return Object.entries(this.SOURCES).map(([sourceId, source]) => {
-            const url = this.getSourceUrl(itemName, sourceId);
+            const url = this.getSourceUrl(itemName, sourceId, slot);
             return `
                 <a href="${url}"
                    target="_blank"
@@ -223,33 +241,74 @@ const ItemPanel = {
 
     /**
      * Get URL for a source - with corrected formats
+     * @param {string} itemName - Name of the item
+     * @param {string} sourceId - Source identifier (wiki, trade, ninja)
+     * @param {string} slot - Item slot for category mapping
      */
-    getSourceUrl(itemName, sourceId) {
+    getSourceUrl(itemName, sourceId, slot = '') {
         const source = this.SOURCES[sourceId];
         if (!source) return '#';
 
         // Wiki uses underscores for spaces, preserves capitalization
         const wikiName = itemName.replace(/ /g, '_');
+        // URL encode for safe inclusion
+        const encodedName = encodeURIComponent(itemName);
 
         switch (sourceId) {
             case 'wiki':
                 // Wiki format: Tabula_Rasa (underscores, capitalized)
-                return `${source.baseUrl}${wikiName}`;
+                // Using poe2wiki.net which has PoE2-specific content
+                return `${source.baseUrl}${encodeURIComponent(wikiName)}`;
 
             case 'trade':
-                // Trade site - just link to the search page
-                // User can paste the item name in search
-                // The trade site doesn't support direct name URL parameters well
+                // Trade site - link to search page
+                // Note: The trade API uses POST with JSON body for searches
+                // Direct URL linking isn't supported, so we provide the base URL
+                // User can use the "Copy Name" button and paste in search
                 return source.baseUrl;
 
             case 'ninja':
-                // poe.ninja PoE2 - link to unique items page
+                // poe.ninja PoE2 - link to the correct category based on slot
                 // Format: https://poe.ninja/poe2/standard/unique-armours
-                return `${source.baseUrl}unique-armours`;
+                const category = this.NINJA_CATEGORIES[slot] || this.guessNinjaCategory(itemName);
+                return `${source.baseUrl}${category}`;
 
             default:
                 return '#';
         }
+    },
+
+    /**
+     * Guess the poe.ninja category based on item name patterns
+     */
+    guessNinjaCategory(itemName) {
+        const name = itemName.toLowerCase();
+
+        // Weapons by type suffix
+        if (name.includes('wand') || name.includes('sceptre') || name.includes('staff') ||
+            name.includes('bow') || name.includes('crossbow') || name.includes('mace') ||
+            name.includes('sword') || name.includes('dagger') || name.includes('spear') ||
+            name.includes('axe') || name.includes('quarterstaff')) {
+            return 'unique-weapons';
+        }
+
+        // Accessories
+        if (name.includes('ring') || name.includes('amulet') || name.includes('belt')) {
+            return 'unique-accessories';
+        }
+
+        // Jewels
+        if (name.includes('jewel')) {
+            return 'unique-jewels';
+        }
+
+        // Flasks
+        if (name.includes('flask')) {
+            return 'unique-flasks';
+        }
+
+        // Default to armours (most common)
+        return 'unique-armours';
     },
 
     /**

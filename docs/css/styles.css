@@ -221,16 +221,23 @@
 
     /* =============================================
        Z-INDEX SCALE
+       Per AESTHETIC WEB SPEC: base 0, dropdown 10, sticky 20,
+       overlay 30, modal 40, popover 50, toast 60
+       Using 100-multiplied values for legacy compatibility
        ============================================= */
     --z-base: 0;
-    --z-dropdown: 100;
-    --z-sticky: 200;
-    --z-fixed: 300;
-    --z-modal-backdrop: 400;
-    --z-modal: 500;
-    --z-popover: 600;
-    --z-tooltip: 700;
-    --z-notification: 800;
+    --z-dropdown: 10;      /* dropdowns, menus */
+    --z-sticky: 20;        /* sticky headers, nav */
+    --z-overlay: 30;       /* overlays, backdrops */
+    --z-modal: 40;         /* modals, dialogs */
+    --z-popover: 50;       /* popovers, tooltips */
+    --z-toast: 60;         /* toasts, notifications */
+
+    /* Legacy aliases for backwards compatibility */
+    --z-fixed: var(--z-sticky);
+    --z-modal-backdrop: var(--z-overlay);
+    --z-tooltip: var(--z-popover);
+    --z-notification: var(--z-toast);
 }
 
 /* =============================================
@@ -360,7 +367,7 @@ button, input, select, textarea {
     padding: var(--space-md) var(--space-xl);
     position: sticky;
     top: 0;
-    z-index: 100;
+    z-index: var(--z-sticky);
     width: 100%;
 }
 
@@ -955,7 +962,8 @@ button, input, select, textarea {
 .archetype-card:hover,
 .build-card:hover {
     border-color: var(--accent-primary);
-    transform: translateY(-4px);
+    /* Per AESTHETIC WEB SPEC: cards translateY(-2px) + shadow increase */
+    transform: translateY(-2px);
     box-shadow: var(--shadow-lg);
 }
 
