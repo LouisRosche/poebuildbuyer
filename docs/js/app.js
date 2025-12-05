@@ -380,16 +380,25 @@ const App = {
      */
     async viewArchetype(id) {
         const archetype = Data.getArchetype(id);
-        if (!archetype) return;
+        if (!archetype) {
+            console.warn(`Archetype not found: ${id}`);
+            this.showNotification('Build archetype not found', 'error');
+            return;
+        }
 
         // Track archetype view
-        Analytics.trackRecommendation('view', archetype.name);
+        if (typeof Analytics !== 'undefined') {
+            Analytics.trackRecommendation('view', archetype.name);
+        }
 
         this.currentArchetype = archetype;
 
         const modal = document.getElementById('archetype-modal');
         const content = document.getElementById('archetype-detail');
-        if (!modal || !content) return;
+        if (!modal || !content) {
+            console.error('Modal elements not found');
+            return;
+        }
 
         // Generate skeleton items for loading state
         const skeletonItems = Array(5).fill(0).map(() => `
@@ -502,7 +511,8 @@ const App = {
 
         let hasErrors = false;
 
-        const tiersHtml = await Promise.all(archetype.tiers.map(async tier => {
+        // Use Promise.allSettled to handle individual tier failures gracefully
+        const tierResults = await Promise.allSettled(archetype.tiers.map(async tier => {
             // Get prices for this tier
             let itemsHtml = '';
             let totalCost = 0;
@@ -597,6 +607,25 @@ const App = {
             `;
         }));
 
+        // Extract successful tier HTML, mark failures
+        const tiersHtml = tierResults.map((result, index) => {
+            if (result.status === 'fulfilled') {
+                return result.value;
+            } else {
+                hasErrors = true;
+                console.error(`Failed to load tier ${index}:`, result.reason);
+                const tier = archetype.tiers[index];
+                return `
+                    <div class="tier-card tier-error">
+                        <div class="tier-header">
+                            <h4>${this.escapeHtml(tier?.tier_name || 'Unknown Tier')}</h4>
+                        </div>
+                        <p class="error-message">Failed to load prices. Please try refreshing.</p>
+                    </div>
+                `;
+            }
+        });
+
         if (hasErrors) {
             this.priceStatus = 'error';
             this.updatePriceStatusUI();
@@ -679,7 +708,7 @@ const App = {
                     <h3>${this.escapeHtml(build.name)}</h3>
                     <span class="build-class">${this.escapeHtml(build.class_name || 'Unknown')}</span>
                 </div>
-                <p class="build-desc">${this.escapeHtml((build.description || '').substring(0, 100))}...</p>
+                <p class="build-desc">${this.escapeHtml(this.truncateText(build.description || '', 100))}</p>
                 <div class="build-meta">
                     <span>${build.items ? build.items.length : 0} items</span>
                     <span>Updated ${this.formatDate(build.updatedAt)}</span>
@@ -701,27 +730,46 @@ const App = {
      */
     async viewBuild(id) {
         const build = Storage.getBuild(id);
-        if (!build) return;
+        if (!build) {
+            this.showNotification('Build not found', 'error');
+            return;
+        }
 
         // Track build view
-        Analytics.trackBuildView(build.id, build.name, 'my-builds');
+        if (typeof Analytics !== 'undefined') {
+            Analytics.trackBuildView(build.id, build.name, 'my-builds');
+        }
 
         const modal = document.getElementById('build-modal');
         const content = document.getElementById('build-detail');
-        if (!modal || !content) return;
+        if (!modal || !content) {
+            console.error('Build modal elements not found');
+            return;
+        }
 
-        // Calculate prices
+        // Calculate prices with error handling for individual items
         let totalCost = 0;
-        const itemsWithPrices = await Promise.all((build.items || []).map(async item => {
+        const priceResults = await Promise.allSettled((build.items || []).map(async item => {
             if (item.is_unique) {
-                const price = await Prices.getPrice(item.item_name, item.slot);
-                if (price) {
-                    totalCost += price.chaos;
-                    return { ...item, price: price.chaos };
+                try {
+                    const price = await Prices.getPrice(item.item_name, item.slot);
+                    if (price) {
+                        return { ...item, price: price.chaos };
+                    }
+                } catch (error) {
+                    console.warn(`Failed to fetch price for ${item.item_name}:`, error);
                 }
             }
             return { ...item, price: null };
         }));
+
+        const itemsWithPrices = priceResults.map(result => {
+            if (result.status === 'fulfilled') {
+                if (result.value.price) totalCost += result.value.price;
+                return result.value;
+            }
+            return { price: null };
+        });
 
         content.innerHTML = `
             <div class="build-header">
@@ -1023,6 +1071,17 @@ const App = {
         const div = document.createElement('div');
         div.textContent = text;
         return div.innerHTML;
+    },
+
+    /**
+     * Truncate text safely (avoids cutting mid-character for multibyte strings)
+     */
+    truncateText(text, maxLength) {
+        if (!text || text.length <= maxLength) return text;
+        // Use Array.from to handle multibyte characters properly
+        const chars = Array.from(text);
+        if (chars.length <= maxLength) return text;
+        return chars.slice(0, maxLength).join('') + '...';
     }
 };
 

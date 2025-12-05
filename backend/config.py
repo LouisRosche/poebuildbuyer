@@ -11,12 +11,15 @@ class Settings(BaseSettings):
     # Application
     APP_NAME: str = "PoE2 Build Tracker"
     APP_VERSION: str = "1.0.0"
-    DEBUG: bool = True
+    DEBUG: bool = False  # Disabled by default for security
 
     # API Configuration
     POE_API_BASE: str = "https://www.pathofexile.com/api/trade2"
-    POE_LEAGUE: str = "Rise of the Abyssal"
+    POE_LEAGUE: str = "Dawn of the Hunt"  # Current PoE2 league
     USER_AGENT: str = "PoE2BuildTracker/1.0 (contact@example.com)"
+
+    # CORS settings (comma-separated origins for production)
+    ALLOWED_ORIGINS: list[str] = ["http://localhost:3000", "http://localhost:8000"]
 
     # Rate limiting (requests per period)
     RATE_LIMIT_REQUESTS: int = 5

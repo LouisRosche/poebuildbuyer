@@ -22,6 +22,12 @@ const Prices = {
     // Whether we're using estimated prices (fallback)
     usingEstimates: false,
 
+    // Rate limiting
+    lastRequestTime: 0,
+    REQUEST_DELAY_MS: 500, // Minimum delay between API requests
+    requestQueue: [],
+    isProcessingQueue: false,
+
     // Estimated prices for PoE2 uniques (fallback when API unavailable)
     // These are rough estimates based on PoE2 Early Access - real prices vary by league
     // Source: Validated items from poe2-items.js
@@ -238,6 +244,28 @@ const Prices = {
     },
 
     /**
+     * Rate-limited fetch to avoid hitting API rate limits
+     */
+    async rateLimitedFetch(url) {
+        const now = Date.now();
+        const timeSinceLastRequest = now - this.lastRequestTime;
+
+        if (timeSinceLastRequest < this.REQUEST_DELAY_MS) {
+            await new Promise(resolve =>
+                setTimeout(resolve, this.REQUEST_DELAY_MS - timeSinceLastRequest)
+            );
+        }
+
+        this.lastRequestTime = Date.now();
+
+        const response = await fetch(url);
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}`);
+        }
+        return response;
+    },
+
+    /**
      * Fetch prices for a specific item type
      */
     async fetchPrices(itemType) {
@@ -247,18 +275,34 @@ const Prices = {
             return [];
         }
 
+        // Check cache first
+        const cacheKey = `${itemType}_${this.league}`;
+        const cached = this.cache[cacheKey];
+        if (cached && (Date.now() - cached.timestamp) < this.CACHE_TTL) {
+            return cached.data;
+        }
+
         const url = `${this.API_BASE}/${endpoint}&league=${encodeURIComponent(this.league)}`;
 
         try {
-            const response = await fetch(url);
-            if (!response.ok) {
-                throw new Error(`HTTP ${response.status}`);
-            }
-
+            const response = await this.rateLimitedFetch(url);
             const data = await response.json();
-            return data.lines || [];
+            const lines = data.lines || [];
+
+            // Cache the result
+            this.cache[cacheKey] = {
+                data: lines,
+                timestamp: Date.now()
+            };
+
+            return lines;
         } catch (error) {
             console.error(`Error fetching ${itemType} prices:`, error);
+            // Return cached data if available (even if stale)
+            if (cached) {
+                console.log(`Using stale cache for ${itemType}`);
+                return cached.data;
+            }
             return [];
         }
     },
