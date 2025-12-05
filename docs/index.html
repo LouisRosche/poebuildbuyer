@@ -1,10 +1,17 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>PoE2 Build Planner & Price Tracker</title>
     <meta name="description" content="Find your perfect Path of Exile 2 build with our interactive build finder and price tracker.">
+    <!-- Performance: preconnect to external resources -->
+    <link rel="preconnect" href="https://poe.ninja" crossorigin>
+    <link rel="preconnect" href="https://www.pathofexile.com" crossorigin>
+    <!-- Theme color for mobile browsers -->
+    <meta name="theme-color" content="#1a1a2e">
+    <!-- Prevent FOUC with system fonts (no external font loading needed) -->
+    <meta name="color-scheme" content="dark light">
     <link rel="stylesheet" href="css/styles.css">
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚔️</text></svg>">
 </head>
@@ -16,16 +23,17 @@
             <div class="header-content">
                 <h1 class="logo">PoE2 Build Planner</h1>
                 <div class="header-actions">
-                    <select id="league-select" class="league-select">
+                    <select id="league-select" class="league-select" aria-label="Select league">
                         <option value="Standard">Standard</option>
-                        <option value="Settlers" selected>Settlers League</option>
-                        <option value="HC Settlers">HC Settlers</option>
+                        <option value="Dawn of the Hunt" selected>Dawn of the Hunt</option>
+                        <option value="HC Dawn of the Hunt">HC Dawn of the Hunt</option>
                     </select>
-                    <button class="btn btn-icon" onclick="App.exportAllData()" title="Export Data">
-                        📤
+                    <button class="btn btn-icon" onclick="App.exportAllData()" title="Export Data" aria-label="Export build data">
+                        <span aria-hidden="true">📤</span>
                     </button>
                     <label class="btn btn-icon" title="Import Data">
-                        📥
+                        <span aria-hidden="true">📥</span>
+                        <span class="sr-only">Import build data</span>
                         <input type="file" accept=".json" onchange="App.importData(event)" style="display: none;">
                     </label>
                 </div>
