@@ -1,0 +1,58 @@
+# PoE2 Build Tracker - Docker Compose Configuration
+# Usage:
+#   Development: docker-compose up
+#   Production:  docker-compose -f docker-compose.yml -f docker-compose.prod.yml up -d
+
+version: '3.8'
+
+services:
+  # FastAPI Backend
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    environment:
+      - POE_LEAGUE=${POE_LEAGUE:-Dawn of the Hunt}
+      - DATABASE_URL=${DATABASE_URL:-sqlite:///./data/db/poe2_tracker.db}
+      - REDIS_URL=redis://redis:6379
+      - DEBUG=${DEBUG:-false}
+      - ALLOWED_ORIGINS=${ALLOWED_ORIGINS:-http://localhost:3000,http://localhost:8000}
+    volumes:
+      # Persist SQLite database
+      - ./data/db:/app/data/db
+      # Persist aggregated builds cache
+      - ./backend/data:/app/backend/data
+    depends_on:
+      - redis
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+
+  # Redis for caching (optional but recommended)
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+volumes:
+  redis_data:
+
+# Production overrides (docker-compose.prod.yml):
+# - Use PostgreSQL instead of SQLite
+# - Add nginx reverse proxy
+# - Enable SSL/TLS
+# - Add monitoring (Prometheus/Grafana)

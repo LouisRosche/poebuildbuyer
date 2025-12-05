@@ -1,0 +1,326 @@
+[
+  {
+    "id": "slam-titan",
+    "name": "Slam Titan",
+    "slug": "slam-titan",
+    "class_name": "Titan",
+    "base_class": "Warrior",
+    "primary_playstyle": "melee",
+    "damage_type": "physical",
+    "tags": ["melee", "physical", "tanky", "aoe", "slam", "league-start"],
+    "mapping_score": 7,
+    "bossing_score": 9,
+    "league_start_score": 8,
+    "complexity": 1,
+    "description": "Devastating slam attacks with incredible durability. The Titan ascendancy provides massive defensive bonuses while still delivering huge damage.",
+    "pros": ["Extremely tanky", "Big satisfying hits", "Great for bosses", "Simple gameplay"],
+    "cons": ["Slow attack speed", "Needs to stand still to attack", "Not the fastest mapper"],
+    "playstyle_notes": "Position carefully, then unleash powerful slams. Use your tankiness to facetank hits while you wind up big attacks.",
+    "leveling_notes": "Slam skills available early. Focus on life and damage nodes.",
+    "tiers": [
+      {
+        "tier_name": "League Start",
+        "tier_order": 1,
+        "min_budget": 0,
+        "max_budget": 50,
+        "description": "Self-found viable with any two-handed weapon.",
+        "items": [
+          {"slot": "weapon", "item_name": "Rare Great Mace", "item_type": "Great Mace", "is_unique": false, "priority": 1},
+          {"slot": "body", "item_name": "Rare Body Armour", "item_type": "Body Armour", "is_unique": false, "priority": 2},
+          {"slot": "helmet", "item_name": "Goldrim", "item_type": "Helmet", "is_unique": true, "priority": 3},
+          {"slot": "boots", "item_name": "Wanderlust", "item_type": "Boots", "is_unique": true, "priority": 3}
+        ]
+      },
+      {
+        "tier_name": "Budget",
+        "tier_order": 2,
+        "min_budget": 50,
+        "max_budget": 500,
+        "description": "Solid red map farmer with good boss damage.",
+        "items": [
+          {"slot": "weapon", "item_name": "Marohi Erqi", "item_type": "Great Mace", "is_unique": true, "priority": 1},
+          {"slot": "body", "item_name": "Rare Body Armour", "item_type": "Body Armour", "is_unique": false, "priority": 1},
+          {"slot": "belt", "item_name": "Darkness Enthroned", "item_type": "Belt", "is_unique": true, "priority": 2}
+        ]
+      }
+    ]
+  },
+  {
+    "id": "lightning-stormweaver",
+    "name": "Lightning Storm Stormweaver",
+    "slug": "lightning-stormweaver",
+    "class_name": "Stormweaver",
+    "base_class": "Sorceress",
+    "primary_playstyle": "spell",
+    "damage_type": "lightning",
+    "tags": ["spell", "lightning", "shock", "aoe", "elemental", "league-start", "fast-mapper"],
+    "mapping_score": 9,
+    "bossing_score": 7,
+    "league_start_score": 8,
+    "complexity": 2,
+    "description": "Harness devastating lightning storms. Stormweaver strips enemy resistances and creates powerful elemental storms for massive AoE damage.",
+    "pros": ["Excellent clear speed", "Shock amplifies damage", "Resistance reduction", "Great AoE coverage"],
+    "cons": ["Can be mana hungry", "Squishy without investment", "Positioning matters"],
+    "playstyle_notes": "Cast lightning spells to shock enemies, then follow up with your main damage skills.",
+    "leveling_notes": "Lightning skills available from start. Spark or Arc work well.",
+    "tiers": [
+      {
+        "tier_name": "League Start",
+        "tier_order": 1,
+        "min_budget": 0,
+        "max_budget": 50,
+        "description": "Functions well on self-found gear.",
+        "items": [
+          {"slot": "weapon", "item_name": "Lifesprig", "item_type": "Wand", "is_unique": true, "priority": 1},
+          {"slot": "body", "item_name": "Tabula Rasa", "item_type": "Body Armour", "is_unique": true, "priority": 1},
+          {"slot": "boots", "item_name": "Wanderlust", "item_type": "Boots", "is_unique": true, "priority": 2}
+        ]
+      },
+      {
+        "tier_name": "Budget",
+        "tier_order": 2,
+        "min_budget": 50,
+        "max_budget": 500,
+        "description": "Smooth mapping with consistent shock application.",
+        "items": [
+          {"slot": "weapon", "item_name": "Enezun's Charge", "item_type": "Wand", "is_unique": true, "priority": 1},
+          {"slot": "body", "item_name": "Ghostwrithe", "item_type": "Body Armour", "is_unique": true, "priority": 1},
+          {"slot": "gloves", "item_name": "Thunderfist", "item_type": "Gloves", "is_unique": true, "priority": 1}
+        ]
+      }
+    ]
+  },
+  {
+    "id": "chaos-infernalist",
+    "name": "Chaos Infernalist",
+    "slug": "chaos-infernalist",
+    "class_name": "Infernalist",
+    "base_class": "Witch",
+    "primary_playstyle": "spell",
+    "damage_type": "chaos",
+    "tags": ["spell", "chaos", "dot", "minion", "curse"],
+    "mapping_score": 8,
+    "bossing_score": 8,
+    "league_start_score": 7,
+    "complexity": 2,
+    "description": "Harness chaotic energies and infernal power. Infernalist excels at damage over time and curse synergies.",
+    "pros": ["Strong damage over time", "Good survivability", "Scales well", "Flexible playstyle"],
+    "cons": ["DoT damage ramps up", "Requires patience", "Complex gear optimization"],
+    "playstyle_notes": "Apply curses and DoT effects, then let enemies melt while you stay mobile.",
+    "leveling_notes": "Chaos spells unlock later. Use fire or hybrid early.",
+    "tiers": [
+      {
+        "tier_name": "League Start",
+        "tier_order": 1,
+        "min_budget": 0,
+        "max_budget": 50,
+        "description": "Workable with self-found chaos items.",
+        "items": [
+          {"slot": "weapon", "item_name": "Rare Wand", "item_type": "Wand", "is_unique": false, "priority": 1},
+          {"slot": "body", "item_name": "Tabula Rasa", "item_type": "Body Armour", "is_unique": true, "priority": 1}
+        ]
+      }
+    ]
+  },
+  {
+    "id": "bow-deadeye",
+    "name": "Lightning Arrow Deadeye",
+    "slug": "bow-deadeye",
+    "class_name": "Deadeye",
+    "base_class": "Ranger",
+    "primary_playstyle": "ranged",
+    "damage_type": "lightning",
+    "tags": ["ranged", "bow", "lightning", "fast-mapper", "projectile"],
+    "mapping_score": 10,
+    "bossing_score": 6,
+    "league_start_score": 6,
+    "complexity": 2,
+    "description": "Rain lightning-infused arrows across the battlefield. Deadeye provides exceptional projectile scaling and range.",
+    "pros": ["Fastest map clear", "Excellent screen coverage", "Safe playstyle", "Great for farming"],
+    "cons": ["Needs good bow investment", "Weaker single target", "Expensive to min-max"],
+    "playstyle_notes": "Shoot and move constantly. Offscreen enemies before they can react.",
+    "leveling_notes": "Lightning Arrow available early. Level with any bow skill.",
+    "tiers": [
+      {
+        "tier_name": "Budget",
+        "tier_order": 2,
+        "min_budget": 50,
+        "max_budget": 500,
+        "description": "Smooth farming build.",
+        "items": [
+          {"slot": "weapon", "item_name": "Storm Cloud", "item_type": "Bow", "is_unique": true, "priority": 1},
+          {"slot": "offhand", "item_name": "Rare Quiver", "item_type": "Quiver", "is_unique": false, "priority": 2}
+        ]
+      }
+    ]
+  },
+  {
+    "id": "poison-pathfinder",
+    "name": "Poison Pathfinder",
+    "slug": "poison-pathfinder",
+    "class_name": "Pathfinder",
+    "base_class": "Ranger",
+    "primary_playstyle": "ranged",
+    "damage_type": "chaos",
+    "tags": ["ranged", "poison", "chaos", "flask", "dot", "league-start"],
+    "mapping_score": 8,
+    "bossing_score": 9,
+    "league_start_score": 9,
+    "complexity": 1,
+    "description": "Stack poisons with incredible flask sustain. Pathfinder's flask mastery provides constant uptime on powerful buffs.",
+    "pros": ["Excellent league starter", "Great flask uptime", "Strong boss damage", "Very survivable"],
+    "cons": ["DoT playstyle not for everyone", "Needs flask management", "Ramp-up time on bosses"],
+    "playstyle_notes": "Apply poisons, keep flasks up, and watch enemies dissolve.",
+    "leveling_notes": "Poison skills available mid-campaign. Level with any attack skill.",
+    "tiers": [
+      {
+        "tier_name": "League Start",
+        "tier_order": 1,
+        "min_budget": 0,
+        "max_budget": 50,
+        "description": "Functions on self-found gear.",
+        "items": [
+          {"slot": "weapon", "item_name": "Rare Claw", "item_type": "Claw", "is_unique": false, "priority": 1},
+          {"slot": "body", "item_name": "Dendrobate", "item_type": "Body Armour", "is_unique": true, "priority": 1}
+        ]
+      }
+    ]
+  },
+  {
+    "id": "summoner-lich",
+    "name": "Skeleton Lich",
+    "slug": "summoner-lich",
+    "class_name": "Lich",
+    "base_class": "Witch",
+    "primary_playstyle": "minion",
+    "damage_type": "physical",
+    "tags": ["minion", "summoner", "physical", "tanky", "league-start", "boss-killer"],
+    "mapping_score": 7,
+    "bossing_score": 9,
+    "league_start_score": 9,
+    "complexity": 1,
+    "description": "Command an army of undead. Lich empowers your minions with dark power and provides excellent survivability.",
+    "pros": ["Very safe playstyle", "Minions do the work", "Great league starter", "Scales well"],
+    "cons": ["Minion AI can be frustrating", "Socket pressure", "Slower clear than direct damage"],
+    "playstyle_notes": "Summon your army and let them fight. Focus on positioning and keeping minions alive.",
+    "leveling_notes": "Skeleton skills available early. Build your army as you level.",
+    "tiers": [
+      {
+        "tier_name": "League Start",
+        "tier_order": 1,
+        "min_budget": 0,
+        "max_budget": 50,
+        "description": "Works great on minimal budget.",
+        "items": [
+          {"slot": "weapon", "item_name": "Rare Sceptre", "item_type": "Sceptre", "is_unique": false, "priority": 1},
+          {"slot": "body", "item_name": "Tabula Rasa", "item_type": "Body Armour", "is_unique": true, "priority": 1}
+        ]
+      },
+      {
+        "tier_name": "Budget",
+        "tier_order": 2,
+        "min_budget": 50,
+        "max_budget": 500,
+        "description": "Solid all-content farmer.",
+        "items": [
+          {"slot": "weapon", "item_name": "Convoking Wand", "item_type": "Wand", "is_unique": false, "priority": 1},
+          {"slot": "helmet", "item_name": "Rare Bone Helmet", "item_type": "Helmet", "is_unique": false, "priority": 1}
+        ]
+      }
+    ]
+  },
+  {
+    "id": "spear-amazon",
+    "name": "Spear Amazon",
+    "slug": "spear-amazon",
+    "class_name": "Amazon",
+    "base_class": "Huntress",
+    "primary_playstyle": "melee",
+    "damage_type": "physical",
+    "tags": ["melee", "spear", "physical", "fast-mapper", "mobile"],
+    "mapping_score": 9,
+    "bossing_score": 7,
+    "league_start_score": 7,
+    "complexity": 2,
+    "description": "Swift spear combat with Amazon precision. High mobility and consistent damage output.",
+    "pros": ["Fast and mobile", "Great clear speed", "Satisfying combat", "Good range for melee"],
+    "cons": ["Squishier than other melee", "Needs positioning", "Spear itemization limited"],
+    "playstyle_notes": "Dart in and out of combat, using spear range to your advantage.",
+    "leveling_notes": "Spear skills available early. Focus on attack speed and physical damage.",
+    "tiers": [
+      {
+        "tier_name": "League Start",
+        "tier_order": 1,
+        "min_budget": 0,
+        "max_budget": 50,
+        "description": "Any rare spear works.",
+        "items": [
+          {"slot": "weapon", "item_name": "Rare Spear", "item_type": "Spear", "is_unique": false, "priority": 1},
+          {"slot": "body", "item_name": "Rare Body Armour", "item_type": "Body Armour", "is_unique": false, "priority": 2}
+        ]
+      }
+    ]
+  },
+  {
+    "id": "gunslinger-witchhunter",
+    "name": "Gunslinger Witchhunter",
+    "slug": "gunslinger-witchhunter",
+    "class_name": "Witchhunter",
+    "base_class": "Mercenary",
+    "primary_playstyle": "ranged",
+    "damage_type": "physical",
+    "tags": ["ranged", "gun", "physical", "crossbow", "league-start"],
+    "mapping_score": 8,
+    "bossing_score": 8,
+    "league_start_score": 8,
+    "complexity": 2,
+    "description": "Unleash rapid crossbow attacks. Witchhunter excels at hunting down enemies with precision shots.",
+    "pros": ["Unique crossbow gameplay", "Good damage scaling", "Flexible skill options", "Strong single target"],
+    "cons": ["Ammo management", "Reload mechanics", "Niche itemization"],
+    "playstyle_notes": "Manage your crossbow skills and reloads for optimal damage output.",
+    "leveling_notes": "Crossbow skills define the build. Focus on physical damage and attack speed.",
+    "tiers": [
+      {
+        "tier_name": "League Start",
+        "tier_order": 1,
+        "min_budget": 0,
+        "max_budget": 50,
+        "description": "Any crossbow works to start.",
+        "items": [
+          {"slot": "weapon", "item_name": "Rare Crossbow", "item_type": "Crossbow", "is_unique": false, "priority": 1}
+        ]
+      }
+    ]
+  },
+  {
+    "id": "staff-invoker",
+    "name": "Elemental Invoker",
+    "slug": "staff-invoker",
+    "class_name": "Invoker",
+    "base_class": "Monk",
+    "primary_playstyle": "spell",
+    "damage_type": "fire",
+    "tags": ["spell", "fire", "staff", "elemental", "aoe"],
+    "mapping_score": 8,
+    "bossing_score": 7,
+    "league_start_score": 7,
+    "complexity": 2,
+    "description": "Channel elemental forces through martial arts. Invoker combines melee and spell casting.",
+    "pros": ["Unique hybrid playstyle", "Good AoE", "Satisfying combat flow", "Flexible damage types"],
+    "cons": ["Complex rotation", "Needs practice", "Jack of all trades"],
+    "playstyle_notes": "Weave melee attacks with spell casting for maximum effect.",
+    "leveling_notes": "Staff skills and spells work well together from the start.",
+    "tiers": [
+      {
+        "tier_name": "League Start",
+        "tier_order": 1,
+        "min_budget": 0,
+        "max_budget": 50,
+        "description": "Works with any staff.",
+        "items": [
+          {"slot": "weapon", "item_name": "Rare Staff", "item_type": "Staff", "is_unique": false, "priority": 1}
+        ]
+      }
+    ]
+  }
+]
