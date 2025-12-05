@@ -1708,175 +1708,323 @@ body.modal-open {
 }
 
 /* =============================================
-   ITEM TOOLTIPS - Rich hover tooltips with source links
+   ITEM PANEL - Fixed side panel for item details
+   Non-blocking UI that doesn't cover other items
    ============================================= */
-.item-tooltip {
+.item-panel {
     position: fixed;
-    z-index: calc(var(--z-modal) + 10);
+    top: 0;
+    right: 0;
+    width: 320px;
+    height: 100vh;
     background: var(--bg-tertiary);
-    border: 1px solid var(--border-color);
-    border-radius: var(--radius-lg);
-    padding: var(--space-md);
-    min-width: 280px;
-    max-width: 360px;
-    box-shadow: var(--shadow-xl);
-    pointer-events: auto;
-    opacity: 0;
-    visibility: hidden;
-    transform: translateY(4px);
-    transition: opacity var(--duration-fast) var(--ease-out),
-                visibility var(--duration-fast) var(--ease-out),
-                transform var(--duration-fast) var(--ease-out);
+    border-left: 1px solid var(--border-color);
+    box-shadow: -4px 0 20px oklch(0% 0 0 / 0.3);
+    z-index: var(--z-modal);
+    transform: translateX(100%);
+    transition: transform var(--duration-normal) var(--ease-out);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
 }
 
-.item-tooltip.visible {
-    opacity: 1;
-    visibility: visible;
-    transform: translateY(0);
+.item-panel.open {
+    transform: translateX(0);
 }
 
-.tooltip-header {
+/* Adjust main content when panel is open */
+body.item-panel-open {
+    margin-right: 320px;
+    transition: margin-right var(--duration-normal) var(--ease-out);
+}
+
+@media (max-width: 768px) {
+    .item-panel {
+        width: 100%;
+        max-width: 360px;
+    }
+
+    body.item-panel-open {
+        margin-right: 0;
+    }
+}
+
+.item-panel-header {
     display: flex;
     justify-content: space-between;
-    align-items: flex-start;
-    gap: var(--space-sm);
-    margin-bottom: var(--space-sm);
-    padding-bottom: var(--space-sm);
+    align-items: center;
+    padding: var(--space-md) var(--space-lg);
+    background: var(--bg-secondary);
+    border-bottom: 1px solid var(--border-color);
+    flex-shrink: 0;
+}
+
+.item-panel-title {
+    font-size: var(--font-md);
+    font-weight: var(--font-semibold);
+    color: var(--text-primary);
+    margin: 0;
+}
+
+.item-panel-close {
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: transparent;
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius);
+    color: var(--text-muted);
+    font-size: var(--font-xl);
+    cursor: pointer;
+    transition: var(--transition-colors);
+}
+
+.item-panel-close:hover {
+    background: var(--bg-hover);
+    color: var(--text-primary);
+    border-color: var(--border-color);
+}
+
+.item-panel-content {
+    flex: 1;
+    overflow-y: auto;
+    padding: var(--space-lg);
+}
+
+.item-panel-placeholder {
+    text-align: center;
+    color: var(--text-muted);
+    padding: var(--space-xl);
+}
+
+.item-panel-loading {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: var(--space-xl);
+    color: var(--text-muted);
+}
+
+.loading-spinner {
+    width: 32px;
+    height: 32px;
+    border: 3px solid var(--border-subtle);
+    border-top-color: var(--accent-primary);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    margin-bottom: var(--space-md);
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+/* Panel item header */
+.panel-item-header {
+    margin-bottom: var(--space-lg);
+    padding-bottom: var(--space-md);
     border-bottom: 1px solid var(--border-subtle);
 }
 
-.tooltip-item-name {
+.panel-item-name {
+    font-size: var(--font-lg);
     font-weight: var(--font-semibold);
-    font-size: var(--font-md);
     line-height: 1.3;
+    margin-bottom: var(--space-xs);
 }
 
-.tooltip-item-name.unique {
+.panel-item-name.unique {
     color: var(--unique-color);
 }
 
-.tooltip-item-name.rare {
+.panel-item-name.rare {
     color: var(--rare-color);
 }
 
-.tooltip-item-type {
-    color: var(--text-muted);
-    font-size: var(--font-xs);
-    white-space: nowrap;
+.panel-item-slot {
+    font-size: var(--font-sm);
+    color: var(--text-secondary);
+    margin-bottom: var(--space-xs);
 }
 
-.tooltip-price-section {
-    margin-bottom: var(--space-md);
-    padding: var(--space-sm);
+.panel-item-rarity {
+    font-size: var(--font-xs);
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+/* Panel price section */
+.panel-price-section {
     background: var(--bg-secondary);
     border-radius: var(--radius);
+    padding: var(--space-md);
+    margin-bottom: var(--space-lg);
 }
 
-.tooltip-price {
-    font-size: var(--font-lg);
+.panel-price-label {
+    font-size: var(--font-xs);
+    color: var(--text-muted);
+    margin-bottom: var(--space-xs);
+}
+
+.panel-price-value {
+    font-size: var(--font-xl);
     font-weight: var(--font-semibold);
     color: var(--accent-secondary);
 }
 
-.tooltip-price-change {
+.panel-price-value .estimate-tag {
     font-size: var(--font-xs);
-    margin-top: var(--space-1);
+    color: var(--text-muted);
+    font-weight: var(--font-normal);
 }
 
-.tooltip-price-change .price-up {
+.panel-price-change {
+    font-size: var(--font-sm);
+    margin-top: var(--space-xs);
+}
+
+.panel-price-change.up {
     color: oklch(65% 0.15 145);
 }
 
-.tooltip-price-change .price-down {
+.panel-price-change.down {
     color: oklch(65% 0.2 25);
 }
 
-.tooltip-sources {
+.panel-listings {
+    font-size: var(--font-xs);
+    color: var(--text-muted);
+    margin-top: var(--space-xs);
+}
+
+/* Panel source links */
+.panel-sources {
+    margin-bottom: var(--space-lg);
+}
+
+.panel-sources-title {
+    font-size: var(--font-sm);
+    font-weight: var(--font-semibold);
+    color: var(--text-secondary);
     margin-bottom: var(--space-sm);
 }
 
-.tooltip-sources-label {
-    font-size: var(--font-xs);
-    color: var(--text-muted);
-    margin-bottom: var(--space-1);
+.panel-source-list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-sm);
 }
 
-.tooltip-source-links {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: var(--space-1);
-}
-
-.tooltip-source-link {
+.panel-source-link {
     display: flex;
     align-items: center;
-    gap: var(--space-1);
-    padding: var(--space-1) var(--space-sm);
+    gap: var(--space-sm);
+    padding: var(--space-sm) var(--space-md);
     background: var(--bg-secondary);
     border: 1px solid var(--border-subtle);
     border-radius: var(--radius);
-    color: var(--text-secondary);
-    font-size: var(--font-xs);
+    color: var(--text-primary);
     text-decoration: none;
     transition: var(--transition-colors);
 }
 
-.tooltip-source-link:hover {
+.panel-source-link:hover {
     background: var(--bg-hover);
     border-color: var(--accent-primary);
-    color: var(--text-primary);
 }
 
-.tooltip-source-link:focus-visible {
+.panel-source-link:focus-visible {
     outline: none;
     box-shadow: var(--focus-ring);
 }
 
-.source-icon {
-    width: 14px;
-    height: 14px;
+.panel-source-link .source-icon {
+    width: 20px;
+    height: 20px;
     flex-shrink: 0;
+    color: var(--accent-primary);
 }
 
-.source-icon svg {
+.panel-source-link .source-icon svg {
     width: 100%;
     height: 100%;
 }
 
-.source-name {
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+.panel-source-link .source-info {
+    flex: 1;
+    min-width: 0;
 }
 
-.tooltip-hint {
+.panel-source-link .source-name {
+    display: block;
+    font-weight: var(--font-medium);
+    font-size: var(--font-sm);
+}
+
+.panel-source-link .source-desc {
+    display: block;
     font-size: var(--font-xs);
     color: var(--text-muted);
-    font-style: italic;
-    text-align: center;
-    padding-top: var(--space-sm);
+}
+
+.panel-source-link .source-arrow {
+    color: var(--text-muted);
+    font-size: var(--font-lg);
+    transition: transform var(--duration-fast) var(--ease-out);
+}
+
+.panel-source-link:hover .source-arrow {
+    transform: translateX(4px);
+    color: var(--accent-primary);
+}
+
+/* Panel actions */
+.panel-actions {
+    margin-bottom: var(--space-md);
+}
+
+.panel-actions .btn.copied {
+    background: oklch(65% 0.15 145);
+    border-color: oklch(65% 0.15 145);
+}
+
+/* Panel help text */
+.panel-help {
+    font-size: var(--font-xs);
+    color: var(--text-muted);
+    padding-top: var(--space-md);
     border-top: 1px solid var(--border-subtle);
 }
 
-/* Items with tooltips get a subtle indicator */
-.has-tooltip {
-    cursor: pointer;
-    position: relative;
+.panel-help p {
+    margin: 0;
 }
 
-.has-tooltip::after {
-    content: '';
-    position: absolute;
-    bottom: -2px;
-    left: 0;
-    right: 0;
-    height: 1px;
-    background: currentColor;
-    opacity: 0.3;
+/* Clickable items indicator */
+[data-item-tooltip] {
+    cursor: pointer;
+    position: relative;
+    transition: color var(--duration-fast) var(--ease-out);
+}
+
+[data-item-tooltip]:hover {
+    text-decoration: underline;
+    text-underline-offset: 2px;
+}
+
+[data-item-tooltip]::after {
+    content: ' ↗';
+    font-size: 0.75em;
+    opacity: 0;
     transition: opacity var(--duration-fast) var(--ease-out);
 }
 
-.has-tooltip:hover::after {
+[data-item-tooltip]:hover::after {
     opacity: 0.6;
 }
 

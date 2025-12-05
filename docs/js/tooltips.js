@@ -1,9 +1,10 @@
 /**
- * Tooltips module - Rich item tooltips with source links and tracking
- * Provides hover tooltips for items with links to wiki, trade, and database
+ * Item Panel module - Fixed side panel for item details
+ * Shows item info, prices, and source links without blocking other content
+ * Replaces hover tooltips with a click-to-open panel
  */
 
-const Tooltips = {
+const ItemPanel = {
     // Source of truth URLs for PoE2 items
     SOURCES: {
         wiki: {
@@ -14,123 +15,99 @@ const Tooltips = {
         },
         trade: {
             name: 'PoE2 Trade',
-            baseUrl: 'https://www.pathofexile.com/trade2/search/poe2/Standard?q=',
+            // Simple search - user types in the search box
+            baseUrl: 'https://www.pathofexile.com/trade2/search/poe2/Standard',
             icon: 'shopping-cart',
-            description: 'Buy this item from other players'
-        },
-        poedb: {
-            name: 'PoE2DB',
-            baseUrl: 'https://poe2db.tw/us/',
-            icon: 'database',
-            description: 'Database with drop locations and stats'
+            description: 'Search for this item on trade site'
         },
         ninja: {
             name: 'poe.ninja',
-            baseUrl: 'https://poe.ninja/economy/poe2/',
+            baseUrl: 'https://poe.ninja/poe2/standard/',
             icon: 'chart-line',
-            description: 'Price history and trends'
+            description: 'Price history and market trends'
         }
     },
 
-    // Current tooltip element
-    tooltipElement: null,
+    // Panel element
+    panelElement: null,
 
-    // Debounce timer for hide
-    hideTimer: null,
-
-    // Currently shown item
+    // Currently displayed item
     currentItem: null,
 
+    // Panel open state
+    isOpen: false,
+
     /**
-     * Initialize tooltip system
+     * Initialize the item panel system
      */
     init() {
-        this.createTooltipElement();
+        this.createPanelElement();
         this.attachGlobalListeners();
-        console.log('Tooltips: Initialized');
+        console.log('ItemPanel: Initialized (click items to view details)');
     },
 
     /**
-     * Create the tooltip DOM element
+     * Create the panel DOM element
      */
-    createTooltipElement() {
-        // Remove existing tooltip if any
-        const existing = document.getElementById('item-tooltip');
+    createPanelElement() {
+        const existing = document.getElementById('item-panel');
         if (existing) existing.remove();
 
-        const tooltip = document.createElement('div');
-        tooltip.id = 'item-tooltip';
-        tooltip.className = 'item-tooltip';
-        tooltip.innerHTML = `
-            <div class="tooltip-header">
-                <span class="tooltip-item-name"></span>
-                <span class="tooltip-item-type"></span>
+        const panel = document.createElement('div');
+        panel.id = 'item-panel';
+        panel.className = 'item-panel';
+        panel.innerHTML = `
+            <div class="item-panel-header">
+                <h3 class="item-panel-title">Item Details</h3>
+                <button class="item-panel-close" onclick="ItemPanel.close()" aria-label="Close">&times;</button>
             </div>
-            <div class="tooltip-price-section">
-                <div class="tooltip-price"></div>
-                <div class="tooltip-price-change"></div>
+            <div class="item-panel-content">
+                <div class="item-panel-placeholder">
+                    <p>Click on any item name to view details and external links.</p>
+                </div>
             </div>
-            <div class="tooltip-sources">
-                <div class="tooltip-sources-label">View on:</div>
-                <div class="tooltip-source-links"></div>
-            </div>
-            <div class="tooltip-hint">Click item name for quick search</div>
         `;
 
-        document.body.appendChild(tooltip);
-        this.tooltipElement = tooltip;
-
-        // Keep tooltip visible when hovering over it
-        tooltip.addEventListener('mouseenter', () => {
-            this.clearHideTimer();
-        });
-
-        tooltip.addEventListener('mouseleave', () => {
-            this.scheduleHide();
-        });
+        document.body.appendChild(panel);
+        this.panelElement = panel;
     },
 
     /**
-     * Attach global event listeners for tooltips
+     * Attach global event listeners
      */
     attachGlobalListeners() {
-        // Use event delegation for all item-name elements
-        document.addEventListener('mouseover', (e) => {
-            const itemEl = e.target.closest('[data-item-tooltip]');
-            if (itemEl) {
-                this.clearHideTimer();
-                this.show(itemEl);
-            }
-        });
-
-        document.addEventListener('mouseout', (e) => {
-            const itemEl = e.target.closest('[data-item-tooltip]');
-            if (itemEl) {
-                this.scheduleHide();
-            }
-        });
-
-        // Handle clicks on item names for quick search
+        // Click on items with tooltip data
         document.addEventListener('click', (e) => {
             const itemEl = e.target.closest('[data-item-tooltip]');
-            if (itemEl && itemEl.dataset.itemName) {
+            if (itemEl) {
                 e.preventDefault();
-                const itemName = itemEl.dataset.itemName;
-                Analytics.trackClick(itemName, 'trade', 'item-name-click');
-                this.openSource(itemName, 'trade');
+                e.stopPropagation();
+                this.showItem(itemEl);
             }
         });
 
-        // Hide on scroll
-        document.addEventListener('scroll', () => {
-            this.hide();
-        }, true);
+        // Close panel when clicking outside (but not on the panel itself)
+        document.addEventListener('click', (e) => {
+            if (this.isOpen &&
+                !e.target.closest('#item-panel') &&
+                !e.target.closest('[data-item-tooltip]')) {
+                // Don't auto-close - let user explicitly close
+                // this.close();
+            }
+        });
+
+        // Close on escape key
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && this.isOpen) {
+                this.close();
+            }
+        });
     },
 
     /**
-     * Show tooltip for an item element
+     * Show item details in the panel
      */
-    async show(element) {
+    async showItem(element) {
         const itemName = element.dataset.itemName;
         const itemSlot = element.dataset.itemSlot || '';
         const isUnique = element.dataset.itemUnique === 'true';
@@ -138,193 +115,221 @@ const Tooltips = {
         if (!itemName) return;
 
         this.currentItem = { name: itemName, slot: itemSlot, isUnique };
+        this.open();
 
-        // Get price data
+        // Show loading state
+        const content = this.panelElement.querySelector('.item-panel-content');
+        content.innerHTML = `
+            <div class="item-panel-loading">
+                <div class="loading-spinner"></div>
+                <p>Loading item data...</p>
+            </div>
+        `;
+
+        // Fetch price data
         let priceData = null;
         if (isUnique) {
             try {
                 priceData = await Prices.getPrice(itemName, itemSlot);
             } catch (e) {
-                console.warn('Could not fetch price for tooltip:', e);
+                console.warn('Could not fetch price:', e);
             }
         }
 
-        // Update tooltip content
-        this.updateContent(itemName, itemSlot, isUnique, priceData);
+        // Render content
+        this.renderContent(itemName, itemSlot, isUnique, priceData);
 
-        // Position and show
-        this.position(element);
-        this.tooltipElement.classList.add('visible');
+        // Track view
+        if (typeof Analytics !== 'undefined') {
+            Analytics.trackClick(itemName, 'panel-view', 'item-panel');
+        }
     },
 
     /**
-     * Update tooltip content
+     * Render panel content
      */
-    updateContent(itemName, slot, isUnique, priceData) {
-        const tooltip = this.tooltipElement;
-
-        // Header
-        tooltip.querySelector('.tooltip-item-name').textContent = itemName;
-        tooltip.querySelector('.tooltip-item-name').className =
-            `tooltip-item-name ${isUnique ? 'unique' : 'rare'}`;
-
+    renderContent(itemName, slot, isUnique, priceData) {
+        const content = this.panelElement.querySelector('.item-panel-content');
         const slotDisplay = this.formatSlot(slot);
-        tooltip.querySelector('.tooltip-item-type').textContent = slotDisplay;
 
-        // Price section
-        const priceSection = tooltip.querySelector('.tooltip-price-section');
+        let priceHtml = '';
         if (priceData && priceData.chaos) {
-            const priceEl = tooltip.querySelector('.tooltip-price');
-            const changeEl = tooltip.querySelector('.tooltip-price-change');
+            const changeHtml = priceData.change
+                ? `<div class="panel-price-change ${priceData.change > 0 ? 'up' : 'down'}">
+                     ${priceData.change > 0 ? '↑' : '↓'} ${Math.abs(priceData.change).toFixed(1)}% this week
+                   </div>`
+                : '';
 
-            priceEl.textContent = `${Prices.formatPrice(priceData.chaos)}`;
-
-            if (priceData.change) {
-                const changeClass = priceData.change > 0 ? 'price-up' : 'price-down';
-                const sign = priceData.change > 0 ? '+' : '';
-                changeEl.innerHTML = `<span class="${changeClass}">${sign}${priceData.change.toFixed(1)}% this week</span>`;
-            } else {
-                changeEl.textContent = '';
-            }
-
-            if (priceData.isEstimate) {
-                priceEl.textContent += ' (est.)';
-            }
-
-            priceSection.style.display = 'block';
-        } else {
-            priceSection.style.display = 'none';
-        }
-
-        // Source links
-        const linksContainer = tooltip.querySelector('.tooltip-source-links');
-        linksContainer.innerHTML = '';
-
-        for (const [sourceId, source] of Object.entries(this.SOURCES)) {
-            const link = document.createElement('a');
-            link.href = this.getSourceUrl(itemName, sourceId);
-            link.className = 'tooltip-source-link';
-            link.target = '_blank';
-            link.rel = 'noopener noreferrer';
-            link.dataset.source = sourceId;
-            link.dataset.itemName = itemName;
-            link.title = source.description;
-            link.innerHTML = `
-                <span class="source-icon">${this.getIcon(source.icon)}</span>
-                <span class="source-name">${source.name}</span>
+            priceHtml = `
+                <div class="panel-price-section">
+                    <div class="panel-price-label">Estimated Price</div>
+                    <div class="panel-price-value">${Prices.formatPrice(priceData.chaos)}${priceData.isEstimate ? ' <span class="estimate-tag">(est.)</span>' : ''}</div>
+                    ${changeHtml}
+                    ${priceData.listingCount ? `<div class="panel-listings">${priceData.listingCount} listings</div>` : ''}
+                </div>
             `;
-
-            // Track clicks
-            link.addEventListener('click', (e) => {
-                Analytics.trackClick(itemName, sourceId, 'tooltip-link');
-            });
-
-            linksContainer.appendChild(link);
         }
+
+        content.innerHTML = `
+            <div class="panel-item-header">
+                <div class="panel-item-name ${isUnique ? 'unique' : 'rare'}">${this.escapeHtml(itemName)}</div>
+                ${slotDisplay ? `<div class="panel-item-slot">${slotDisplay}</div>` : ''}
+                <div class="panel-item-rarity">${isUnique ? 'Unique Item' : 'Rare Item'}</div>
+            </div>
+
+            ${priceHtml}
+
+            <div class="panel-sources">
+                <div class="panel-sources-title">External Resources</div>
+                <div class="panel-source-list">
+                    ${this.renderSourceLinks(itemName, isUnique)}
+                </div>
+            </div>
+
+            <div class="panel-actions">
+                <button class="btn btn-secondary btn-small" onclick="ItemPanel.copyItemName()">
+                    Copy Name
+                </button>
+            </div>
+
+            <div class="panel-help">
+                <p>Click any link above to open in a new tab. Use the search bar on trade sites to find this exact item.</p>
+            </div>
+        `;
     },
 
     /**
-     * Get URL for a source
+     * Render source links
+     */
+    renderSourceLinks(itemName, isUnique) {
+        return Object.entries(this.SOURCES).map(([sourceId, source]) => {
+            const url = this.getSourceUrl(itemName, sourceId);
+            return `
+                <a href="${url}"
+                   target="_blank"
+                   rel="noopener noreferrer"
+                   class="panel-source-link"
+                   onclick="ItemPanel.trackClick('${this.escapeHtml(itemName)}', '${sourceId}')">
+                    <span class="source-icon">${this.getIcon(source.icon)}</span>
+                    <div class="source-info">
+                        <span class="source-name">${source.name}</span>
+                        <span class="source-desc">${source.description}</span>
+                    </div>
+                    <span class="source-arrow">→</span>
+                </a>
+            `;
+        }).join('');
+    },
+
+    /**
+     * Get URL for a source - with corrected formats
      */
     getSourceUrl(itemName, sourceId) {
         const source = this.SOURCES[sourceId];
         if (!source) return '#';
 
-        const encodedName = encodeURIComponent(itemName);
-        const slugName = itemName.toLowerCase().replace(/[^a-z0-9]+/g, '_');
+        // Wiki uses underscores for spaces, preserves capitalization
         const wikiName = itemName.replace(/ /g, '_');
 
         switch (sourceId) {
             case 'wiki':
+                // Wiki format: Tabula_Rasa (underscores, capitalized)
                 return `${source.baseUrl}${wikiName}`;
+
             case 'trade':
-                // JSON query for trade search
-                const tradeQuery = JSON.stringify({
-                    query: {
-                        status: { option: 'online' },
-                        name: itemName,
-                        type: itemName
-                    },
-                    sort: { price: 'asc' }
-                });
-                return `${source.baseUrl}${encodeURIComponent(tradeQuery)}`;
-            case 'poedb':
-                return `${source.baseUrl}${slugName}`;
+                // Trade site - just link to the search page
+                // User can paste the item name in search
+                // The trade site doesn't support direct name URL parameters well
+                return source.baseUrl;
+
             case 'ninja':
-                return `${source.baseUrl}Standard/unique-armours?name=${encodedName}`;
+                // poe.ninja PoE2 - link to unique items page
+                // Format: https://poe.ninja/poe2/standard/unique-armours
+                return `${source.baseUrl}unique-armours`;
+
             default:
                 return '#';
         }
     },
 
     /**
-     * Open a source URL directly
+     * Track click on source link
      */
-    openSource(itemName, sourceId) {
-        const url = this.getSourceUrl(itemName, sourceId);
-        window.open(url, '_blank', 'noopener,noreferrer');
-    },
-
-    /**
-     * Position tooltip relative to element
-     */
-    position(element) {
-        const tooltip = this.tooltipElement;
-        const rect = element.getBoundingClientRect();
-        const tooltipRect = tooltip.getBoundingClientRect();
-
-        // Default: show below and to the right
-        let left = rect.left;
-        let top = rect.bottom + 8;
-
-        // Adjust if too far right
-        if (left + tooltipRect.width > window.innerWidth - 16) {
-            left = window.innerWidth - tooltipRect.width - 16;
-        }
-
-        // Adjust if too far down - show above instead
-        if (top + tooltipRect.height > window.innerHeight - 16) {
-            top = rect.top - tooltipRect.height - 8;
-        }
-
-        // Ensure not off left edge
-        if (left < 16) left = 16;
-
-        // Ensure not off top
-        if (top < 16) top = 16;
-
-        tooltip.style.left = `${left}px`;
-        tooltip.style.top = `${top}px`;
-    },
-
-    /**
-     * Schedule hiding the tooltip
-     */
-    scheduleHide() {
-        this.hideTimer = setTimeout(() => {
-            this.hide();
-        }, 150);
-    },
-
-    /**
-     * Clear the hide timer
-     */
-    clearHideTimer() {
-        if (this.hideTimer) {
-            clearTimeout(this.hideTimer);
-            this.hideTimer = null;
+    trackClick(itemName, sourceId) {
+        if (typeof Analytics !== 'undefined') {
+            Analytics.trackClick(itemName, sourceId, 'panel-link');
         }
     },
 
     /**
-     * Hide the tooltip
+     * Copy item name to clipboard
      */
-    hide() {
-        this.clearHideTimer();
-        if (this.tooltipElement) {
-            this.tooltipElement.classList.remove('visible');
+    async copyItemName() {
+        if (!this.currentItem) return;
+
+        try {
+            await navigator.clipboard.writeText(this.currentItem.name);
+            this.showCopyFeedback();
+        } catch (e) {
+            // Fallback for older browsers
+            const textArea = document.createElement('textarea');
+            textArea.value = this.currentItem.name;
+            document.body.appendChild(textArea);
+            textArea.select();
+            document.execCommand('copy');
+            document.body.removeChild(textArea);
+            this.showCopyFeedback();
         }
-        this.currentItem = null;
+    },
+
+    /**
+     * Show copy feedback
+     */
+    showCopyFeedback() {
+        const btn = this.panelElement.querySelector('.panel-actions .btn');
+        if (btn) {
+            const originalText = btn.textContent;
+            btn.textContent = 'Copied!';
+            btn.classList.add('copied');
+            setTimeout(() => {
+                btn.textContent = originalText;
+                btn.classList.remove('copied');
+            }, 1500);
+        }
+    },
+
+    /**
+     * Open the panel
+     */
+    open() {
+        if (this.panelElement) {
+            this.panelElement.classList.add('open');
+            this.isOpen = true;
+            document.body.classList.add('item-panel-open');
+        }
+    },
+
+    /**
+     * Close the panel
+     */
+    close() {
+        if (this.panelElement) {
+            this.panelElement.classList.remove('open');
+            this.isOpen = false;
+            document.body.classList.remove('item-panel-open');
+            this.currentItem = null;
+        }
+    },
+
+    /**
+     * Toggle panel visibility
+     */
+    toggle() {
+        if (this.isOpen) {
+            this.close();
+        } else {
+            this.open();
+        }
     },
 
     /**
@@ -354,13 +359,12 @@ const Tooltips = {
     },
 
     /**
-     * Get SVG icon for source
+     * Get SVG icon
      */
     getIcon(iconName) {
         const icons = {
             'book': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>',
             'shopping-cart': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>',
-            'database': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg>',
             'chart-line': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18"/><path d="M18 9l-5 5-4-4-6 6"/></svg>'
         };
 
@@ -368,27 +372,7 @@ const Tooltips = {
     },
 
     /**
-     * Make an element tooltip-enabled
-     * Call this when rendering items to add tooltip data attributes
-     */
-    enableTooltip(element, itemName, slot = '', isUnique = true) {
-        element.dataset.itemTooltip = 'true';
-        element.dataset.itemName = itemName;
-        element.dataset.itemSlot = slot;
-        element.dataset.itemUnique = isUnique.toString();
-        element.classList.add('has-tooltip');
-    },
-
-    /**
-     * Generate HTML attributes for tooltip-enabled item
-     * Use this in template strings when rendering items
-     */
-    getTooltipAttrs(itemName, slot = '', isUnique = true) {
-        return `data-item-tooltip="true" data-item-name="${this.escapeHtml(itemName)}" data-item-slot="${slot}" data-item-unique="${isUnique}"`;
-    },
-
-    /**
-     * Escape HTML to prevent XSS
+     * Escape HTML
      */
     escapeHtml(text) {
         const div = document.createElement('div');
@@ -397,9 +381,12 @@ const Tooltips = {
     }
 };
 
+// Alias for backwards compatibility with existing data-item-tooltip attributes
+const Tooltips = ItemPanel;
+
 // Initialize on DOM ready
 if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', () => Tooltips.init());
+    document.addEventListener('DOMContentLoaded', () => ItemPanel.init());
 } else {
-    Tooltips.init();
+    ItemPanel.init();
 }
