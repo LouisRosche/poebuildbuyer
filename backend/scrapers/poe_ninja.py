@@ -156,10 +156,12 @@ class PoeNinjaScraper:
             "sort": "dps",
         }
 
-        if class_name:
-            params["class"] = class_name
+        # Note: poe.ninja uses "class" param for both base class and ascendancy
+        # Ascendancy takes priority if provided, otherwise use class_name
         if ascendancy:
             params["class"] = ascendancy
+        elif class_name:
+            params["class"] = class_name
 
         try:
             # poe.ninja builds overview

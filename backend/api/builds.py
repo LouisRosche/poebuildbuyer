@@ -15,15 +15,20 @@ from backend.config import ITEM_SLOTS
 router = APIRouter(prefix="/builds", tags=["builds"])
 
 
+# Constants for validation
+MAX_ITEMS_PER_BUILD = 50
+MAX_FILE_SIZE_BYTES = 1024 * 1024  # 1MB
+
+
 # Pydantic models for request/response
 class BuildItemCreate(BaseModel):
-    slot: str = Field(..., description="Item slot (weapon, body, etc.)")
-    item_name: str = Field(..., description="Item name")
-    item_type: Optional[str] = Field(None, description="Base type for API queries")
+    slot: str = Field(..., max_length=50, description="Item slot (weapon, body, etc.)")
+    item_name: str = Field(..., max_length=255, description="Item name")
+    item_type: Optional[str] = Field(None, max_length=255, description="Base type for API queries")
     is_unique: bool = Field(True, description="Whether this is a unique item")
     required: bool = Field(True, description="Whether this item is required")
     priority: int = Field(1, ge=1, le=3, description="Priority level (1=core, 2=important, 3=luxury)")
-    variant: Optional[str] = Field(None, description="Item variant (e.g., tribute type)")
+    variant: Optional[str] = Field(None, max_length=100, description="Item variant (e.g., tribute type)")
     min_stats: Optional[Dict[str, Any]] = Field(None, description="Minimum stat requirements for rare items")
 
 
@@ -43,8 +48,8 @@ class BuildItemResponse(BaseModel):
 class BuildCreate(BaseModel):
     name: str = Field(..., min_length=1, max_length=255)
     class_name: Optional[str] = Field(None, max_length=100)
-    description: Optional[str] = None
-    items: List[BuildItemCreate] = Field(default_factory=list)
+    description: Optional[str] = Field(None, max_length=5000)
+    items: List[BuildItemCreate] = Field(default_factory=list, max_length=MAX_ITEMS_PER_BUILD)
 
 
 class BuildUpdate(BaseModel):
@@ -423,8 +428,15 @@ async def export_build(build_id: str, db: Session = Depends(get_db)):
 @router.post("/import", response_model=BuildResponse, status_code=201)
 async def import_build(file: UploadFile = File(...), db: Session = Depends(get_db)):
     """Import a build from JSON file."""
+    # Validate file size to prevent DoS
+    content = await file.read(MAX_FILE_SIZE_BYTES + 1)
+    if len(content) > MAX_FILE_SIZE_BYTES:
+        raise HTTPException(
+            status_code=413,
+            detail=f"File too large. Maximum size is {MAX_FILE_SIZE_BYTES // 1024}KB"
+        )
+
     try:
-        content = await file.read()
         data = json.loads(content)
     except json.JSONDecodeError:
         raise HTTPException(status_code=400, detail="Invalid JSON file")

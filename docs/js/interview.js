@@ -339,7 +339,7 @@ const Interview = {
         if (question.type === 'select') {
             optionsHtml = question.options.map((opt, index) => `
                 <button class="option-btn ${response === opt.value ? 'selected' : ''} ${this.state.focusedOption === index ? 'keyboard-focus' : ''}"
-                        onclick="Interview.setResponse('${opt.value}')"
+                        onclick="Interview.setResponse('${this.escapeAttr(opt.value)}')"
                         data-index="${index}">
                     <span class="option-number">${index + 1}</span>
                     ${this.escapeHtml(opt.label)}
@@ -349,7 +349,7 @@ const Interview = {
             const selected = response || [];
             optionsHtml = question.options.map((opt, index) => `
                 <button class="option-btn ${selected.includes(opt.value) ? 'selected' : ''} ${this.state.focusedOption === index ? 'keyboard-focus' : ''}"
-                        onclick="Interview.setResponse('${opt.value}')"
+                        onclick="Interview.setResponse('${this.escapeAttr(opt.value)}')"
                         data-index="${index}">
                     <span class="option-number">${index + 1}</span>
                     ${this.escapeHtml(opt.label)}
@@ -619,5 +619,16 @@ const Interview = {
         const div = document.createElement('div');
         div.textContent = text;
         return div.innerHTML;
+    },
+
+    /**
+     * Escape string for use in onclick attribute
+     */
+    escapeAttr(text) {
+        if (!text) return '';
+        return String(text)
+            .replace(/\\/g, '\\\\')
+            .replace(/'/g, "\\'")
+            .replace(/"/g, '&quot;');
     }
 };
