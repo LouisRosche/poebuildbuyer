@@ -75,6 +75,20 @@ const Data = {
             weight: 1.5
         },
         {
+            id: "clear_speed",
+            question: "How fast do you want to clear maps?",
+            type: "select",
+            required: false,
+            options: [
+                { value: "any", label: "No preference" },
+                { value: "slow", label: "Slow and steady - I enjoy thorough clearing" },
+                { value: "moderate", label: "Moderate - balanced pace" },
+                { value: "fast", label: "Fast - I want to zoom through maps" },
+                { value: "zoom", label: "Maximum speed - screen-wide clears" }
+            ],
+            weight: 1.0
+        },
+        {
             id: "budget",
             question: "What's your approximate budget?",
             type: "select",
@@ -971,6 +985,22 @@ const Data = {
      */
     getInterviewQuestions() {
         return this.INTERVIEW_QUESTIONS;
+    },
+
+    /**
+     * Get archetypes by tag
+     * @param {string} tag - Tag to filter by (e.g., 'league-start', 'boss-killer')
+     * @returns {Array} Filtered archetypes
+     */
+    getArchetypesByTag(tag) {
+        if (!tag) return this.ARCHETYPES;
+
+        const lowerTag = tag.toLowerCase();
+        return this.ARCHETYPES.filter(arch =>
+            arch.tags.some(t => t.toLowerCase() === lowerTag ||
+                           t.toLowerCase().includes(lowerTag) ||
+                           lowerTag.includes(t.toLowerCase()))
+        );
     }
 };
 
