@@ -59,12 +59,21 @@ app = FastAPI(
 )
 
 # CORS middleware for frontend
+# Note: allow_credentials=True requires specific origins (not "*")
+# In development, allow localhost; in production, set ALLOWED_ORIGINS env var
+allowed_origins = settings.ALLOWED_ORIGINS if hasattr(settings, 'ALLOWED_ORIGINS') else [
+    "http://localhost:3000",
+    "http://localhost:8000",
+    "http://127.0.0.1:3000",
+    "http://127.0.0.1:8000",
+]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # In production, restrict this
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_origins=allowed_origins if not settings.DEBUG else ["*"],
+    allow_credentials=not settings.DEBUG,  # Only allow credentials with specific origins
+    allow_methods=["GET", "POST", "PUT", "DELETE"],
+    allow_headers=["Content-Type", "Authorization"],
 )
 
 # API routers
@@ -87,11 +96,11 @@ async def health_check():
     }
 
 
-# Serve frontend static files
+# Serve frontend static files from docs directory
 try:
-    app.mount("/static", StaticFiles(directory="frontend"), name="static")
+    app.mount("/static", StaticFiles(directory="docs"), name="static")
 except Exception:
-    logger.warning("Frontend directory not found, static files not mounted")
+    logger.warning("Docs directory not found, static files not mounted")
 
 
 # Serve index.html for root
@@ -99,7 +108,7 @@ except Exception:
 async def serve_frontend():
     """Serve the frontend application."""
     try:
-        return FileResponse("frontend/index.html")
+        return FileResponse("docs/index.html")
     except Exception:
         return {"message": "Frontend not found. API available at /api"}
 
