@@ -1,6 +1,7 @@
 /**
- * Prices module - poe.ninja API integration
- * Fetches live price data for PoE items
+ * Prices module - poe.ninja API integration for Path of Exile 2
+ * Fetches live price data for PoE2 items
+ * Falls back to estimated prices when API is unavailable (CORS)
  */
 
 const Prices = {
@@ -21,109 +22,128 @@ const Prices = {
     // Whether we're using estimated prices (fallback)
     usingEstimates: false,
 
-    // Estimated prices for common uniques (fallback when API unavailable)
-    // These are rough estimates - real prices vary by league
+    // Estimated prices for PoE2 uniques (fallback when API unavailable)
+    // These are rough estimates based on PoE2 Early Access - real prices vary by league
+    // Source: Validated items from poe2-items.js
     ESTIMATED_PRICES: {
-        // Weapons
+        // === WANDS ===
+        'lifesprig': 5,
+        'adonia\'s ego': 15,
+        'enezun\'s charge': 30,
+        'sanguine diviner': 40,
+
+        // === SCEPTRES ===
+        'font of power': 20,
+        'palm of the dreamer': 35,
+        'sacred flame': 25,
+
+        // === STAFFS ===
+        'dusk vigil': 20,
+        'earthbound': 15,
+        'taryn\'s shiver': 80,
+        'the searing touch': 60,
+        'whispering ice': 100,
+        'the unborn lich': 150,
+
+        // === BOWS ===
+        'widowhail': 10,
+        'quill rain': 5,
+        'doomfletch': 40,
+        'slivertongue': 50,
+
+        // === CROSSBOWS ===
+        'mist whisper': 15,
+        'rampart raptor': 25,
+        'the last lament': 60,
+        'double vision': 80,
+        'fairgraves\' curse': 45,
+
+        // === QUARTERSTAFFS ===
+        'matsya': 20,
+        'nazir\'s judgement': 35,
+        'pillar of the caged god': 50,
+        'blood thorn': 40,
+
+        // === MACES ===
+        'frostbreath': 30,
+        'seeing stars': 25,
+        'wylund\'s stake': 35,
+        'olrovasara': 60,
+
+        // === GREAT MACES ===
+        'brain rattler': 40,
+        'chober chaber': 15,
+        'hrimnor\'s hymn': 30,
+        'quecholli': 45,
+        'trephina': 55,
+        'marohi erqi': 25,
+
+        // === SPEARS ===
+        'saitha\'s spear': 20,
+        'chainsting': 30,
+        'daevata\'s wind': 45,
+        'tyranny\'s grip': 50,
+
+        // === DAGGERS ===
+        'winter\'s bite': 35,
+
+        // === BODY ARMOUR ===
+        'ghostwrithe': 25,
+        'enfolding dawn': 60,
+        'bitterbloom': 50,
+        'lightning coil': 80,
+        'cospri\'s will': 100,
+        'hyrri\'s ire': 70,
+        'gloamgown': 90,
+        'sacrosanctum': 75,
         'tabula rasa': 10,
-        'obliteration': 5,
-        'wasp nest': 3,
-        'cerberus limb': 15,
-        'death\'s opus': 50,
-        'tidebreaker': 20,
-        'kaom\'s primacy': 5,
-        'cold iron point': 30,
-        // Armour
-        'kaom\'s heart': 100,
-        'cloak of flame': 5,
-        'belly of the beast': 30,
-        'brass dome': 80,
-        'inpulsa\'s broken heart': 60,
-        'hyrri\'s ire': 40,
-        'carcass jack': 25,
-        'dendrobate': 15,
-        'vis mortis': 20,
-        'coming calamity': 10,
-        'cloak of defiance': 15,
-        'skin of the lords': 200,
-        // Helmets
-        'goldrim': 2,
-        'the baron': 5,
-        'starkonja\'s head': 10,
-        'abyssus': 20,
-        'crown of the inward eye': 50,
-        'mind of the council': 15,
-        // Gloves
-        'atziri\'s acuity': 150,
-        'grip of the council': 10,
-        'storm\'s gift': 30,
-        'the embalmer': 5,
-        // Boots
-        'wanderlust': 1,
-        'atziri\'s step': 15,
-        'bones of ullr': 5,
-        'sin trek': 10,
-        'corpsewalker': 25,
-        'victario\'s flight': 5,
-        'ralakesh\'s impatience': 30,
-        // Belts
-        'darkness enthroned': 20,
-        'headhunter': 5000,
-        'mageblood': 10000,
-        'ryslatha\'s coil': 100,
-        // Amulets
-        'atziri\'s foible': 3,
-        'sidhebreath': 1,
-        'astramentis': 25,
-        'stone of lazhwar': 2,
-        'impresence': 50,
-        'ashes of the stars': 500,
-        'pandemonius': 80,
-        'aul\'s uprising': 200,
-        'daresso\'s salute': 15,
-        // Rings
-        'snakepit': 5,
-        'kalandra\'s touch': 1000,
-        // Shields
-        'rathpith globe': 50,
-        'aegis aurora': 150,
-        'advancing fortress': 5,
-        'prism guardian': 40,
-        // Jewels
-        'violent dead': 10,
-        'anatomical knowledge': 15,
-        'undying hate': 30,
-        'heart of the well': 20,
-        'from nothing': 40,
-        'grand spectrum': 25,
-        'conqueror\'s efficiency': 5,
-        'conqueror\'s potency': 5,
-        // More Armour
-        'queen of the forest': 40,
-        'rat\'s nest': 15,
-        'shadows and dust': 10,
-        'seven-league step': 20,
-        'crown of eyes': 80,
-        'veil of the night': 5,
-        'maligaro\'s virtuosity': 10,
-        'kaom\'s roots': 20,
-        'lycosidae': 25,
-        // More Accessories
-        'ngamahu\'s sign': 5,
-        'call of the brotherhood': 40,
-        'xoph\'s blood': 150,
-        'dyadian dawn': 10,
-        'pyre': 5,
-        'carnage heart': 10,
-        'mark of the elder': 30,
-        'mark of the shaper': 30,
-        'le heup of all': 3,
-        'thief\'s torment': 20,
-        'ungil\'s harmony': 5,
-        'dream fragments': 10,
-        'belt of the deceiver': 5,
-        'polaric devastation': 25,
-        'badge of the brotherhood': 200,
+
+        // === HELMETS ===
+        'goldrim': 3,
+        'thrillsteel': 25,
+        'greymake': 15,
+        'demigod\'s virtue': 500,
+
+        // === GLOVES ===
+        'thunderfist': 40,
+
+        // === BOOTS ===
+        'wanderlust': 2,
+        'bushwhack': 20,
+        'luminous pace': 35,
+        'shankgonne': 45,
+
+        // === SHIELDS ===
+        'kaltenhalt': 30,
+        'calgyra\'s arc': 25,
+
+        // === QUIVERS ===
+        'asphyxia\'s wrath': 35,
+        'blackgleam': 15,
+
+        // === BELTS ===
+        'darkness enthroned': 50,
+        'headhunter': 8000,
+        'umbilicus immortalis': 100,
+
+        // === RINGS ===
+        'thief\'s torment': 25,
+        'dream fragments': 15,
+        'grip of kulemak': 60,
+
+        // === AMULETS ===
+        'hinekora\'s sight': 80,
+        'revered resin': 20,
+
+        // === JEWELS ===
+        'heart of the well': 30,
+        'undying hate': 40,
+
+        // === CHARMS ===
+        'beira\'s anguish': 50,
+
+        // === FLASKS ===
+        'blood of the warrior': 35,
     },
 
     // Item type to API endpoint mapping
@@ -139,9 +159,10 @@ const Prices = {
     },
 
     // Map item slots to poe.ninja types
+    // Note: offhand can be shields (armour) or quivers (armour on poe.ninja)
     SLOT_TO_TYPE: {
         weapon: 'UniqueWeapon',
-        offhand: 'UniqueWeapon',
+        offhand: 'UniqueArmour', // shields and quivers are classified as armour
         body: 'UniqueArmour',
         helmet: 'UniqueArmour',
         gloves: 'UniqueArmour',
@@ -153,6 +174,7 @@ const Prices = {
         jewel1: 'UniqueJewel',
         jewel2: 'UniqueJewel',
         jewel3: 'UniqueJewel',
+        quiver: 'UniqueArmour', // quivers classified as armour
         flask: 'UniqueFlask'
     },
 
@@ -203,11 +225,11 @@ const Prices = {
      */
     async getLeagues() {
         try {
-            // PoE2 early access leagues (as of Dec 2024)
+            // PoE2 leagues (as of Dec 2024)
             return [
                 { id: 'Standard', name: 'Standard' },
-                { id: 'Settlers', name: 'Settlers (Current League)' },
-                { id: 'HC Settlers', name: 'HC Settlers' }
+                { id: 'Dawn of the Hunt', name: 'Dawn of the Hunt (Current League)' },
+                { id: 'HC Dawn of the Hunt', name: 'HC Dawn of the Hunt' }
             ];
         } catch (error) {
             console.error('Error fetching leagues:', error);
