@@ -40,6 +40,17 @@
     --weight-semibold: 600;
     --weight-bold: 700;
 
+    /* Typography tracking adjustments per AESTHETIC WEB SPEC */
+    --tracking-uppercase: 0.05em;
+    --tracking-bold: -0.02em;
+    --tracking-headline: -0.02em;
+    --tracking-small: 0.01em;
+
+    /* Measure (line length) constraints */
+    --measure-narrow: 45ch;
+    --measure-optimal: 65ch;
+    --measure-wide: 75ch;
+
     /* =============================================
        COLOR SYSTEM - OKLCH with semantic tokens
        Dark theme optimized for readability
@@ -258,6 +269,9 @@ body {
     font-size: var(--font-base);
     font-weight: var(--weight-normal);
     letter-spacing: var(--tracking-normal);
+    /* OpenType features per AESTHETIC WEB SPEC */
+    font-feature-settings: "kern" 1, "liga" 1, "calt" 1;
+    text-rendering: optimizeLegibility;
 }
 
 /* Typography defaults */
@@ -278,10 +292,37 @@ h6 { font-size: var(--font-base); }
 p {
     line-height: var(--leading-relaxed);
     text-wrap: pretty;
+    max-width: var(--measure-wide);
+}
+
+/* Prose container for optimal readability */
+.prose {
+    max-width: var(--measure-optimal);
+}
+
+.prose p,
+.prose li {
+    line-height: var(--leading-relaxed);
+    max-width: var(--measure-wide);
 }
 
 small {
     font-size: var(--font-sm);
+    letter-spacing: var(--tracking-small);
+}
+
+/* Tabular numbers for data display */
+.tabular-nums,
+.price,
+.stat-value,
+.score-value {
+    font-variant-numeric: tabular-nums;
+}
+
+/* Uppercase text styling */
+.uppercase {
+    text-transform: uppercase;
+    letter-spacing: var(--tracking-uppercase);
 }
 
 code, pre, kbd {
@@ -463,6 +504,7 @@ button, input, select, textarea {
 .btn-primary:hover {
     background: var(--accent-primary-hover);
     box-shadow: var(--shadow-md);
+    transform: translateY(-1px);
 }
 
 .btn-primary:disabled {
@@ -482,6 +524,7 @@ button, input, select, textarea {
 .btn-secondary:hover {
     background: var(--bg-hover);
     border-color: var(--border-strong);
+    transform: translateY(-1px);
 }
 
 .btn-danger {
@@ -3154,4 +3197,162 @@ body.item-panel-open {
     height: 100%;
     background: linear-gradient(90deg, var(--accent-warning), var(--accent-secondary));
     transition: width var(--duration-normal) var(--ease-out);
+}
+
+/* =============================================
+   ACCESSIBILITY - Comprehensive reduced motion
+   Per AESTHETIC WEB SPEC: Respect prefers-reduced-motion
+   ============================================= */
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+    }
+
+    .btn:hover,
+    .btn:active,
+    .card:hover,
+    [data-item-tooltip]:hover {
+        transform: none !important;
+    }
+}
+
+/* Focus visible only - keyboard navigation */
+:focus:not(:focus-visible) {
+    outline: none;
+}
+
+:focus-visible {
+    outline: 2px solid var(--accent-primary);
+    outline-offset: 2px;
+}
+
+/* Skip link for accessibility */
+.skip-link {
+    position: absolute;
+    top: -100%;
+    left: 0;
+    background: var(--accent-primary);
+    color: var(--text-inverse);
+    padding: var(--space-sm) var(--space-md);
+    z-index: 9999;
+    text-decoration: none;
+    font-weight: var(--weight-medium);
+}
+
+.skip-link:focus {
+    top: 0;
+}
+
+/* =============================================
+   PERFORMANCE - Content visibility optimization
+   ============================================= */
+.tab-content:not(.active) {
+    content-visibility: hidden;
+}
+
+/* Contain layout/paint for performance */
+.card,
+.modal-content,
+.item-panel {
+    contain: layout style;
+}
+
+/* =============================================
+   LIGHT MODE - Optional theme support
+   Per AESTHETIC WEB SPEC: backgrounds not pure white
+   ============================================= */
+@media (prefers-color-scheme: light) {
+    :root:not([data-theme="dark"]) {
+        /* Light mode with subtle warm hue, not pure white */
+        --gray-950: oklch(98.5% 0.002 70);
+        --gray-900: oklch(96% 0.003 70);
+        --gray-800: oklch(92% 0.005 70);
+        --gray-700: oklch(85% 0.008 70);
+        --gray-600: oklch(70% 0.01 70);
+        --gray-500: oklch(55% 0.012 70);
+        --gray-400: oklch(40% 0.014 70);
+        --gray-300: oklch(30% 0.012 70);
+        --gray-200: oklch(22% 0.01 70);
+        --gray-100: oklch(15% 0.008 70);
+
+        /* Semantic reassignment for light mode */
+        --bg-primary: var(--gray-950);
+        --bg-secondary: var(--gray-900);
+        --bg-tertiary: var(--gray-800);
+        --bg-elevated: oklch(100% 0 0);
+        --bg-hover: var(--gray-700);
+
+        --text-primary: var(--gray-100);
+        --text-secondary: var(--gray-400);
+        --text-muted: var(--gray-500);
+        --text-inverse: oklch(98% 0.002 70);
+
+        --border-color: var(--gray-700);
+        --border-subtle: var(--gray-800);
+
+        /* Adjust shadows for light mode */
+        --shadow-color: 220 40% 50%;
+    }
+}
+
+/* Force dark mode with data attribute */
+[data-theme="dark"] {
+    --gray-950: oklch(13% 0.005 260);
+    --gray-900: oklch(17% 0.008 260);
+    --gray-800: oklch(22% 0.01 260);
+    --gray-700: oklch(30% 0.012 260);
+    --gray-600: oklch(40% 0.014 260);
+    --gray-500: oklch(55% 0.014 260);
+    --gray-400: oklch(65% 0.012 260);
+    --gray-300: oklch(75% 0.01 260);
+    --gray-200: oklch(85% 0.008 260);
+    --gray-100: oklch(92% 0.005 260);
+}
+
+/* =============================================
+   UTILITY CLASSES - Per AESTHETIC WEB SPEC
+   ============================================= */
+
+/* Measure constraints */
+.max-w-prose { max-width: var(--measure-optimal); }
+.max-w-narrow { max-width: var(--measure-narrow); }
+.max-w-wide { max-width: var(--measure-wide); }
+
+/* Text utilities */
+.text-balance { text-wrap: balance; }
+.text-pretty { text-wrap: pretty; }
+
+/* Aspect ratios */
+.aspect-square { aspect-ratio: 1 / 1; }
+.aspect-video { aspect-ratio: 16 / 9; }
+.aspect-golden { aspect-ratio: 1.618 / 1; }
+
+/* Screen reader only */
+.sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}
+
+/* Not screen reader only (visible) */
+.not-sr-only {
+    position: static;
+    width: auto;
+    height: auto;
+    padding: 0;
+    margin: 0;
+    overflow: visible;
+    clip: auto;
+    white-space: normal;
 }
