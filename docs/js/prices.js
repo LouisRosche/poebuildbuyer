@@ -227,15 +227,44 @@ const Prices = {
     },
 
     /**
-     * Get available leagues from poe.ninja
+     * Get available leagues - fetches from backend API with fallback
      */
     async getLeagues() {
         try {
-            // PoE2 leagues (as of Dec 2024)
+            // Try backend API first (has fresh data)
+            if (this.BACKEND_URL) {
+                const response = await fetch(`${this.BACKEND_URL}/config/leagues`);
+                if (response.ok) {
+                    const leagues = await response.json();
+                    return leagues.map(l => ({
+                        id: l.id,
+                        name: l.is_current ? `${l.name} (Current)` : l.name
+                    }));
+                }
+            }
+
+            // Try poe.ninja index state
+            try {
+                const response = await fetch('https://poe.ninja/api/data/getindexstate');
+                if (response.ok) {
+                    const data = await response.json();
+                    const poe2Leagues = (data.economyLeagues || [])
+                        .filter(l => l.url && l.url.includes('poe2'))
+                        .map(l => ({ id: l.name, name: l.displayName || l.name }));
+                    if (poe2Leagues.length > 0) {
+                        return poe2Leagues;
+                    }
+                }
+            } catch (e) {
+                console.log('poe.ninja league fetch failed, using defaults');
+            }
+
+            // Fallback to known PoE2 leagues
             return [
                 { id: 'Standard', name: 'Standard' },
-                { id: 'Dawn of the Hunt', name: 'Dawn of the Hunt (Current League)' },
-                { id: 'HC Dawn of the Hunt', name: 'HC Dawn of the Hunt' }
+                { id: 'Dawn of the Hunt', name: 'Dawn of the Hunt' },
+                { id: 'HC Dawn of the Hunt', name: 'HC Dawn of the Hunt' },
+                { id: 'Legacy of the Vaal', name: 'Legacy of the Vaal (Upcoming)' }
             ];
         } catch (error) {
             console.error('Error fetching leagues:', error);
