@@ -209,7 +209,8 @@ class InterviewSession(Base):
         }
 
 
-# Interview question definitions (not stored in DB, defined in code)
+# Interview question definitions - synced with frontend docs/js/data.js
+# IMPORTANT: Keep in sync with frontend Data.INTERVIEW_QUESTIONS
 INTERVIEW_QUESTIONS = [
     {
         "id": "class",
@@ -218,14 +219,15 @@ INTERVIEW_QUESTIONS = [
         "required": True,
         "options": [
             {"value": "any", "label": "I'm flexible / Show me all options"},
-            {"value": "witch", "label": "Witch"},
+            {"value": "warrior", "label": "Warrior"},
             {"value": "sorceress", "label": "Sorceress"},
+            {"value": "witch", "label": "Witch"},
             {"value": "ranger", "label": "Ranger"},
+            {"value": "huntress", "label": "Huntress"},
             {"value": "mercenary", "label": "Mercenary"},
             {"value": "monk", "label": "Monk"},
-            {"value": "warrior", "label": "Warrior"},
         ],
-        "weight": 2.0,  # How much this affects scoring
+        "weight": 2.0,
     },
     {
         "id": "playstyle",
@@ -266,9 +268,22 @@ INTERVIEW_QUESTIONS = [
             {"value": "mapping", "label": "Fast map clearing"},
             {"value": "bossing", "label": "Boss killing"},
             {"value": "both", "label": "Balanced - both mapping and bossing"},
-            {"value": "league_mechanics", "label": "League mechanics (delve, heist, etc.)"},
         ],
         "weight": 1.5,
+    },
+    {
+        "id": "clear_speed",
+        "question": "How fast do you want to clear maps?",
+        "type": "select",
+        "required": False,
+        "options": [
+            {"value": "any", "label": "No preference"},
+            {"value": "slow", "label": "Slow and steady - I enjoy thorough clearing"},
+            {"value": "moderate", "label": "Moderate - balanced pace"},
+            {"value": "fast", "label": "Fast - I want to zoom through maps"},
+            {"value": "zoom", "label": "Maximum speed - screen-wide clears"},
+        ],
+        "weight": 1.0,
     },
     {
         "id": "budget",
@@ -303,48 +318,12 @@ INTERVIEW_QUESTIONS = [
         "type": "select",
         "required": False,
         "options": [
-            {"value": "glass_cannon", "label": "Glass cannon - Max damage, deaths are fine"},
-            {"value": "balanced", "label": "Balanced - Some defense, good damage"},
-            {"value": "tanky", "label": "Tanky - I hate dying, willing to sacrifice damage"},
-            {"value": "immortal", "label": "Near-immortal - I want to AFK in boss fights"},
+            {"value": "any", "label": "No preference"},
+            {"value": "glass_cannon", "label": "Maximum damage, I'll just dodge"},
+            {"value": "balanced", "label": "Balanced - I want some tankiness"},
+            {"value": "tanky", "label": "Very tanky - I hate dying"},
         ],
         "weight": 1.0,
-    },
-    {
-        "id": "clear_speed",
-        "question": "How important is clear speed?",
-        "type": "select",
-        "required": False,
-        "options": [
-            {"value": "slow", "label": "Slow and steady - I take my time"},
-            {"value": "moderate", "label": "Moderate - Comfortable pace"},
-            {"value": "fast", "label": "Fast - Gotta go fast"},
-            {"value": "zoom", "label": "Zoom zoom - Speed is everything"},
-        ],
-        "weight": 0.8,
-    },
-    {
-        "id": "existing_gear",
-        "question": "Do you have any valuable items you want to build around?",
-        "type": "text",
-        "required": False,
-        "placeholder": "e.g., 'Headhunter', 'Mageblood', or leave blank",
-        "weight": 0.5,
-    },
-    {
-        "id": "avoid",
-        "question": "Anything you want to avoid?",
-        "type": "multiselect",
-        "required": False,
-        "options": [
-            {"value": "piano", "label": "Piano builds (many buttons to press)"},
-            {"value": "minions", "label": "Minion/summon builds"},
-            {"value": "dot", "label": "Damage over time builds"},
-            {"value": "melee", "label": "Melee combat"},
-            {"value": "channeling", "label": "Channeling skills"},
-            {"value": "totems", "label": "Totem builds"},
-        ],
-        "weight": 1.5,
     },
 ]
 
