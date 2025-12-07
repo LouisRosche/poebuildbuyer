@@ -15,6 +15,7 @@ from backend.api.builds import router as builds_router
 from backend.api.prices import router as prices_router
 from backend.api.interview import router as interview_router
 from backend.api.archetypes import router as archetypes_router
+from backend.api.config import router as config_router
 from backend.services.scheduler import sync_scheduler
 from backend.scrapers.aggregator import build_aggregator
 
@@ -82,6 +83,7 @@ app.include_router(builds_router, prefix="/api")
 app.include_router(prices_router, prefix="/api")
 app.include_router(interview_router, prefix="/api")
 app.include_router(archetypes_router, prefix="/api")
+app.include_router(config_router, prefix="/api")
 
 
 # Health check
