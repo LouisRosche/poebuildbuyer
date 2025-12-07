@@ -71,14 +71,15 @@ class RecommendationEngine:
         # Class matching
         user_class = responses.get("class", "any")
         if user_class != "any":
-            # Map user-friendly names to archetype class names
+            # Map user-friendly names to archetype class names (PoE2 classes)
             class_mapping = {
-                "witch": ["Witch", "Necromancer", "Blood Mage"],
-                "sorceress": ["Sorceress"],
+                "witch": ["Witch", "Infernalist", "Blood Mage", "Lich"],
+                "sorceress": ["Sorceress", "Stormweaver", "Chronomancer"],
                 "ranger": ["Ranger", "Deadeye", "Pathfinder"],
-                "mercenary": ["Mercenary"],
-                "monk": ["Monk"],
-                "warrior": ["Warrior", "Slayer", "Juggernaut"],
+                "huntress": ["Huntress", "Amazon", "Ritualist"],
+                "mercenary": ["Mercenary", "Witchhunter", "Gemling Legionnaire", "Tactician"],
+                "monk": ["Monk", "Invoker", "Acolyte of Chayula"],
+                "warrior": ["Warrior", "Titan", "Warbringer", "Smith of Kitava"],
             }
             valid_classes = class_mapping.get(user_class, [user_class.title()])
             if archetype.class_name not in valid_classes:
