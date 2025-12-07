@@ -87,18 +87,22 @@ def seed_archetypes():
 
     try:
         for arch_data in archetypes_data:
-            # Check if archetype already exists
+            # Check if archetype already exists by ID or slug
             existing = (
                 db.query(BuildArchetype)
-                .filter(BuildArchetype.slug == arch_data["slug"])
+                .filter(
+                    (BuildArchetype.id == arch_data["id"]) |
+                    (BuildArchetype.slug == arch_data["slug"])
+                )
                 .first()
             )
             if existing:
                 logger.info(f"Archetype '{arch_data['name']}' already exists, skipping")
                 continue
 
-            # Create archetype
+            # Create archetype - use ID from JSON to match frontend
             archetype = BuildArchetype(
+                id=arch_data["id"],  # Use the ID from JSON file
                 name=arch_data["name"],
                 slug=arch_data["slug"],
                 class_name=arch_data["class_name"],
@@ -144,6 +148,31 @@ def seed_archetypes():
         raise
     finally:
         db.close()
+
+
+def clear_archetypes():
+    """Clear all archetypes and budget tiers from database."""
+    db = SessionLocal()
+    try:
+        # Delete budget tiers first (foreign key constraint)
+        deleted_tiers = db.query(BudgetTier).delete()
+        deleted_archs = db.query(BuildArchetype).delete()
+        db.commit()
+        logger.info(f"Cleared {deleted_archs} archetypes and {deleted_tiers} budget tiers")
+    except Exception as e:
+        logger.error(f"Error clearing archetypes: {e}")
+        db.rollback()
+        raise
+    finally:
+        db.close()
+
+
+def reseed_archetypes():
+    """Clear and reseed all archetypes."""
+    logger.info("Clearing existing archetypes...")
+    clear_archetypes()
+    logger.info("Reseeding archetypes...")
+    seed_archetypes()
 
 
 def main():
